@@ -1,0 +1,226 @@
+/* This files is part of the Hello World smart contract example that is included in Boilerplate.
+ * It is only the definition of the contract, implementation is located in the "contract" folder
+ * and tests are located in the "test" folder.
+ *
+ * You can use this as a basic template for new contracts.
+ * 
+ * When building Boilerplate or the contract project located in the "../contract/AElf.Contracts.HamsterWoodsContract/" 
+ * protoc (the protobuf compiler) will be invoked and this file will produce a .c.cs file and .g.cs file, in the 
+ * "../contract/AElf.Contracts.HamsterWoodsContract/Protobuf/Generated/" folder. 
+ */
+
+// the version of the language, use proto3 for contracts
+syntax = "proto3";
+
+// some core imports for aelf chain types
+import "aelf/core.proto";
+import "aelf/options.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "acs12.proto";
+
+// the name of the C# namespace in which the contract code will be,
+// generated code will also be in this namespace.
+option csharp_namespace = "Contracts.HamsterWoodsContract";
+
+// the contract definition: a gRPC service definition.
+service HamsterWoodsContract {
+
+    // the full name of the C# class that will contain the state (here <namespace>.<state-class-name> format).
+    option (aelf.csharp_state) = "Contracts.HamsterWoodsContract.HamsterWoodsContractState";
+    option (aelf.base) = "acs12.proto";
+    // an action defined as a gRPC service method.
+    // this action take a google.protobuf.Empty (placeholder for void) as input
+    // and returns a custom defined type: HelloReturn.
+    //   method Play include Bingo
+    rpc Play (PlayInput) returns (PlayOutput) {
+    }
+    
+    rpc PurchaseChance (google.protobuf.Int32Value) returns (google.protobuf.Empty) {
+    }
+
+    rpc SetGameLimitSettings (GameLimitSettings) returns (google.protobuf.Empty) {
+    }
+
+    rpc Initialize (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    }
+
+    rpc ChangeAdmin (aelf.Address) returns (google.protobuf.Empty) {
+    }
+
+    rpc SetGameRules (GameRules) returns (google.protobuf.Empty) {
+    }
+
+    rpc SetRankingRules (RankingRules) returns (google.protobuf.Empty) {
+    }
+
+    rpc SetPurchaseChanceConfig (PurchaseChanceConfig) returns (google.protobuf.Empty) {
+    }
+
+    // Views
+    rpc CheckBeanPass (aelf.Address) returns (google.protobuf.BoolValue) {
+        option (aelf.is_view) = true;
+    }
+
+    rpc GetPlayerInformation (aelf.Address) returns (PlayerInformation) {
+        option (aelf.is_view) = true;
+    }
+
+    rpc GetBoutInformation (GetBoutInformationInput) returns (BoutInformation) {
+        option (aelf.is_view) = true;
+    }
+
+    rpc GetAdmin (google.protobuf.Empty) returns (aelf.Address) {
+        option (aelf.is_view) = true;
+    }
+
+    rpc GetGameLimitSettings (google.protobuf.Empty) returns (GameLimitSettings) {
+        option (aelf.is_view) = true;
+    }
+
+    rpc GetGameRules (google.protobuf.Empty) returns (GameRules) {
+        option (aelf.is_view) = true;
+    }
+
+    rpc GetRankingRules (google.protobuf.Empty) returns (RankingRules) {
+        option (aelf.is_view) = true;
+    }
+
+    rpc GetPurchaseChanceConfig (google.protobuf.Empty) returns (PurchaseChanceConfig) {
+        option (aelf.is_view) = true;
+    }
+
+
+}
+
+message PlayInput {
+    bool reset_start = 1;
+    int32 dice_count = 2;
+}
+message PlayOutput {
+    int64 expected_block_height = 1;
+}
+
+message GetBoutInformationInput {
+    aelf.Hash play_id = 1;
+}
+
+message PlayerInformation {
+    aelf.Address player_address = 1;
+    int32 playable_count = 2;
+    google.protobuf.Timestamp last_play_time = 3;
+    int32 cur_grid_num = 4;
+    bool bean_pass_owned = 5;
+    int64 total_beans = 6;
+    int64 weekly_beans = 7;
+    int32 purchased_chances_count = 8;
+    int64 last_bingo_block_height = 9;
+}
+
+
+message BoutInformation {
+    GridType grid_type = 1;
+    int32 grid_num = 2;
+    int32 score = 3;
+    aelf.Hash play_id = 4;
+    int64 bingo_block_height = 5;
+    google.protobuf.Timestamp play_time = 6;
+    aelf.Address player_address = 7;
+    int32 dice_count = 8;
+    repeated int32 dice_numbers = 9;
+    int32 start_grid_num = 10;
+    int32 end_grid_num = 11;
+}
+
+message GameLimitSettings {
+    int32 daily_max_play_count = 1;
+    int32 daily_play_count_reset_hours = 2;
+}
+
+
+message GameRules {
+    google.protobuf.Timestamp begin_time = 1;
+    google.protobuf.Timestamp end_time = 2;
+    int32 min_score = 3;
+    int32 max_score = 4;
+}
+
+message RankingRules {
+    google.protobuf.Timestamp begin_time = 1;
+    int32 weekly_tournament_begin_num = 2;
+    int32 ranking_hours = 3;
+    int32 publicity_hours = 4;
+    int32 ranking_player_count = 5;
+    int32 publicity_player_count = 6;
+}
+
+message RankingRulesUpdated {
+    option (aelf.is_event) = true;
+    google.protobuf.Timestamp begin_time = 1;
+    int32 weekly_tournament_begin_num = 2;
+    int32 ranking_hours = 3;
+    int32 publicity_hours = 4;
+    int32 ranking_player_count = 5;
+    int32 publicity_player_count = 6;
+}
+
+
+enum GridType {
+    Blue = 0;
+    Red = 1;
+    Gold = 2;
+}
+
+message GridTypeList {
+    // The gridType list.
+    repeated GridType value = 1;
+}
+message DiceList {
+    repeated int32 value = 1;
+}
+
+message RewardRules {
+    repeated RewardRule reward_rules = 1;
+}
+
+message RewardRule {
+    int32 rank_begin = 1;
+    int32 rank_end = 2;
+    int32 reward_token_amount = 4;
+    string reward_token_symbol = 5;
+}
+
+message PurchaseChanceConfig {
+    int32 beans_amount = 1;
+}
+
+// LogEvent
+
+
+message Bingoed {
+    option (aelf.is_event) = true;
+    GridType grid_type = 1;
+    int32 grid_num = 2;
+    int64 score = 3;
+    int64 bingo_block_height = 4;
+    aelf.Address player_address = 5;
+    int32 dice_count = 6;
+    DiceList dice_numbers = 7;
+    int32 start_grid_num = 8;
+    int32 end_grid_num = 9;
+    int64 weekly_beans = 10;
+    int64 total_beans = 11;
+    int32 total_chance = 12;
+
+}
+
+message PurchasedChance {
+    option (aelf.is_event) = true;
+    aelf.Address player_address = 1;
+    int32 beans_amount = 2;
+    int32 chance_count = 3;
+    int64 weekly_beans = 4;
+    int64 total_beans = 5;
+    int32 total_chance = 6;
+}
