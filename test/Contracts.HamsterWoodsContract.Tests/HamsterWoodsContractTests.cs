@@ -146,7 +146,7 @@ namespace Contracts.HamsterWoodsContract
             });
             await TokenContractStub.Issue.SendAsync(new IssueInput
             {
-                Symbol = HamsterWoodsContractConstants.BeanSymbol,
+                Symbol = HamsterWoodsContractConstants.AcornSymbol,
                 Amount = 100000000000000,
                 Memo = "Issue",
                 To = DAppContractAddress
@@ -176,7 +176,7 @@ namespace Contracts.HamsterWoodsContract
             }
 
             var playerInfo = await HamsterWoodsContractStub.GetPlayerInformation.CallAsync(DefaultAddress);
-            playerInfo.TotalBeans.ShouldBe(sumScore);
+            playerInfo.TotalAcorns.ShouldBe(sumScore);
             playerInfo.CurGridNum.ShouldBe(sumGridNum);
         }
 
@@ -328,23 +328,23 @@ namespace Contracts.HamsterWoodsContract
         {
             var result = await UserStub.SetPurchaseChanceConfig.SendWithExceptionAsync(new PurchaseChanceConfig
             {
-                BeansAmount = 10
+                AcornsAmount = 10
             });
 
             result.TransactionResult.Error.ShouldContain("No permission");
             result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendWithExceptionAsync(
                 new PurchaseChanceConfig
                 {
-                    BeansAmount = 0
+                    AcornsAmount = 0
                 });
             result.TransactionResult.Error.ShouldContain("Invalid BeansAmount");
             result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
             {
-                BeansAmount = 10
+                AcornsAmount = 10
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             var purchaseChanceConfig = await HamsterWoodsContractStub.GetPurchaseChanceConfig.CallAsync(new Empty());
-            purchaseChanceConfig.BeansAmount.ShouldBe(10);
+            purchaseChanceConfig.AcornsAmount.ShouldBe(10);
         }
 
         [Fact]
@@ -371,7 +371,7 @@ namespace Contracts.HamsterWoodsContract
             }
 
             var playerInfo = await HamsterWoodsContractStub.GetPlayerInformation.CallAsync(DefaultAddress);
-            playerInfo.TotalBeans.ShouldBe(sumScore);
+            playerInfo.TotalAcorns.ShouldBe(sumScore);
             playerInfo.WeeklyBeans.ShouldBe(sumScore);
             playerInfo.PlayableCount.ShouldBe(HamsterWoodsContractConstants.DailyMaxPlayCount - 5);
         }
@@ -382,7 +382,7 @@ namespace Contracts.HamsterWoodsContract
             await PurchaseChanceInit();
             var result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
             {
-                BeansAmount = 10
+                AcornsAmount = 10
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             result = await HamsterWoodsContractStub.PurchaseChance.SendAsync(new Int32Value
@@ -405,7 +405,7 @@ namespace Contracts.HamsterWoodsContract
             });
             await TokenContractStub.Issue.SendAsync(new IssueInput
             {
-                Symbol = HamsterWoodsContractConstants.BeanSymbol,
+                Symbol = HamsterWoodsContractConstants.AcornSymbol,
                 Amount = 100000000000000,
                 Memo = "Issue",
                 To = DefaultAddress
@@ -413,7 +413,7 @@ namespace Contracts.HamsterWoodsContract
 
             await TokenContractStub.Approve.SendAsync(new ApproveInput()
             {
-                Symbol = HamsterWoodsContractConstants.BeanSymbol,
+                Symbol = HamsterWoodsContractConstants.AcornSymbol,
                 Amount = 1000000000000,
                 Spender = DAppContractAddress,
             });

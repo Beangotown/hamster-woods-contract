@@ -57,7 +57,7 @@ namespace Contracts.HamsterWoodsContract
             }));
             AsyncHelper.RunSync(() => CreateNftCollectionAsync(TokenContractStub, new CreateInput()
             {
-                Symbol = HamsterWoodsContractConstants.BeanSymbol,
+                Symbol = HamsterWoodsContractConstants.AcornSymbol,
                 TokenName = "BeanSymbol",
                 TotalSupply = 100000000000000,
                 Decimals = 2,
