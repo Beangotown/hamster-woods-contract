@@ -1,6 +1,8 @@
+using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
 using AElf.Sdk.CSharp;
+using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Contracts.HamsterWoodsContract;
@@ -24,6 +26,10 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             DailyMaxPlayCount = HamsterWoodsContractConstants.DailyMaxPlayCount,
             DailyPlayCountResetHours = HamsterWoodsContractConstants.DailyPlayCountResetHours
         };
+        State.ManagerList.Value = new ManagerList
+        {
+            Value = { }
+        };
         State.GridTypeList.Value = new GridTypeList
         {
             Value =
@@ -36,11 +42,11 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         State.Initialized.Value = true;
         return new Empty();
     }
-    
-    public override PlayOutput Play(PlayInput input)
+
+    public override Empty Play(PlayInput input)
     {
         Assert(input.DiceCount <= 3, "Invalid diceCount");
-        var playerInformation = InitPlayerInfo(input.ResetStart);
+        var playerInformation = SetPlayerInfo(input.ResetStart);
         var boutInformation = new BoutInformation
         {
             PlayId = Context.OriginTransactionId,
@@ -59,13 +65,8 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
 
         // lock acorns
         playerInformation.LockedAcorns += boutInformation.Score;
-        // State.TokenContract.Transfer.Send(new TransferInput
-        // {
-        //     To = Context.Sender,
-        //     Symbol = HamsterWoodsContractConstants.BeanSymbol,
-        //     Amount = boutInformation.Score
-        // });
-        Context.Fire(new Bingoed
+
+        Context.Fire(new Picked
         {
             GridType = boutInformation.GridType,
             GridNum = boutInformation.GridNum,
@@ -82,34 +83,24 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             },
             StartGridNum = boutInformation.StartGridNum,
             EndGridNum = boutInformation.EndGridNum,
-            WeeklyBeans = playerInformation.WeeklyBeans,
+            WeeklyBeans = playerInformation.WeeklyAcorns,
             TotalBeans = playerInformation.TotalAcorns,
-            TotalChance = playerInformation.PurchasedChancesCount
+            TotalChance = playerInformation.PurchasedChancesCount,
+            IsRace = State.RaceConfig.Value.IsRace
         });
-        return new PlayOutput { ExpectedBlockHeight = 0 };
+        return new Empty();
     }
 
     public override Empty PurchaseChance(Int32Value input)
     {
         var acornsAmount = State.PurchaseChanceConfig.Value.AcornsAmount;
         Assert(acornsAmount > 0, "PurchaseChance is not allowed");
-        var playerInformation = InitPlayerInfo(false);
+        var playerInformation = SetPlayerInfo(false);
         ReSetPlayerAcorns(playerInformation);
         Assert(playerInformation.TotalAcorns >= input.Value * acornsAmount, "Acorn is not enough");
         Assert(
             GetRemainingDailyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) <=
             input.Value, "Purchase chance is not enough");
-
-        // if (IsWeekRanking())
-        // {
-        //     var currentWeek = State.CurrentWeek.Value;
-        //     var realWeeklyBeans =
-        //         Math.Min(playerInformation.TotalBeans, State.UserWeeklyBeans[Context.Sender][currentWeek]);
-        //     playerInformation.WeeklyBeans = realWeeklyBeans > input.Value * beansAmount
-        //         ? realWeeklyBeans.Sub(input.Value * beansAmount)
-        //         : 0;
-        //     State.UserWeeklyBeans[Context.Sender][currentWeek] = (int)playerInformation.WeeklyBeans;
-        // }
 
         playerInformation.TotalAcorns -= input.Value * acornsAmount;
         playerInformation.PurchasedChancesCount += input.Value;
@@ -122,17 +113,68 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             Symbol = HamsterWoodsContractConstants.AcornSymbol,
             Memo = "PurchaseChance"
         });
+        
         Context.Fire(new PurchasedChance
         {
             PlayerAddress = Context.Sender,
             BeansAmount = input.Value * acornsAmount,
             ChanceCount = input.Value,
-            WeeklyBeans = playerInformation.WeeklyBeans,
+            WeeklyBeans = playerInformation.WeeklyAcorns,
             TotalBeans = playerInformation.TotalAcorns,
             TotalChance = playerInformation.PurchasedChancesCount
         });
         return new Empty();
     }
-    
+
+    public override Empty BatchUnlockAcorns(UnlockAcornsInput input)
+    {
+        Assert(State.ManagerList.Value.Value.Contains(Context.Sender), "No permission.");
+        Assert(input.Value.Count > 0 && input.Value.Count < 20, "Invalid input.");
+
+        foreach (var address in input.Value)
+        {
+            UnlockAcorns(address);
+        }
+
+        return new Empty();
+    }
+
     // send locked money
+    private void UnlockAcorns(Address input)
+    {
+        var lockedAcornsInfoList = State.LockedAcornsInfoList[input];
+        if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null)
+        {
+            return;
+        }
+
+        // time judge
+        var needUnlockInfoList = lockedAcornsInfoList.Value.Where(t => !t.IsUnlocked).ToList();
+        if (needUnlockInfoList.Count == 0)
+        {
+            return;
+        }
+
+        var amount = needUnlockInfoList.Sum(t => t.Acorns);
+        foreach (var item in needUnlockInfoList)
+        {
+            item.IsUnlocked = true;
+        }
+
+        State.TokenContract.Transfer.Send(new TransferInput
+        {
+            To = input,
+            Symbol = HamsterWoodsContractConstants.AcornSymbol,
+            Amount = amount
+        });
+
+        // log event
+        Context.Fire(new AcornsUnlocked
+        {
+            From = Context.Self,
+            To = input,
+            Symbol = HamsterWoodsContractConstants.AcornSymbol,
+            Amount = amount
+        });
+    }
 }

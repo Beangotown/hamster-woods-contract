@@ -27,5 +27,8 @@ public partial class HamsterWoodsContractState : ContractState
 
     public SingletonState<PurchaseChanceConfig> PurchaseChanceConfig { get; set; }
     public SingletonState<RankingRules> RankingRules { get; set; }
+    public MappedState<Address,LockedAcornsInfoList> LockedAcornsInfoList { get; set; }
+    public SingletonState<ManagerList> ManagerList { get; set; } 
+    public SingletonState<RaceConfig> RaceConfig { get; set; } 
 
 }

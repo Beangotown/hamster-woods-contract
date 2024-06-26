@@ -47,7 +47,7 @@ namespace Contracts.HamsterWoodsContract
 
             AsyncHelper.RunSync(() => CreateNftAsync(TokenContractStub, new CreateInput()
             {
-                Symbol = HamsterWoodsContractConstants.HalloweenBeanPassSymbol,
+                Symbol = HamsterWoodsContractConstants.HamsterPassSymbol,
                 TokenName = "BeanPassSymbol",
                 TotalSupply = 100,
                 Decimals = 0,

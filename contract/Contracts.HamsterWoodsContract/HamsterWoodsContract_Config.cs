@@ -68,4 +68,44 @@ public partial class HamsterWoodsContract
         State.RankingRules.Value = rankingRules;
         return new Empty();
     }
+    
+    public override Empty SetUnlockManager(Address input)
+    {
+        Assert(State.Initialized.Value, "Not initialized.");
+        Assert(input != null && !input.Value.IsNullOrEmpty(),"Invalid input.");
+        Assert(State.Admin.Value == Context.Sender, "No permission.");
+
+        State.ManagerList.Value.Value.Add(input);
+        return new Empty();
+    }
+    
+    public override Empty StartRace(Empty input)
+    {
+        Assert(State.Initialized.Value, "Not initialized.");
+        Assert(State.Admin.Value == Context.Sender, "No permission.");
+        State.RaceConfig.Value.IsRace = true;
+        if (State.CurrentWeek.Value == 0)
+        {
+            State.CurrentWeek.Value = 1;
+        }
+       
+        return new Empty();
+    }
+    
+    public override Empty StopRace(Empty input)
+    {
+        Assert(State.Initialized.Value, "Not initialized.");
+        Assert(State.Admin.Value == Context.Sender, "No permission.");
+        State.RaceConfig.Value.IsRace = false;
+        return new Empty();
+    }
+    
+    public override Empty SetRaceConfig(RaceConfig input)
+    {
+        Assert(State.Initialized.Value, "Not initialized.");
+        Assert(State.Admin.Value == Context.Sender, "No permission.");
+
+        State.RaceConfig.Value = input;
+        return new Empty();
+    }
 }

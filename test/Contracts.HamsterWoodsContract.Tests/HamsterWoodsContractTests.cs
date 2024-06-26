@@ -139,7 +139,7 @@ namespace Contracts.HamsterWoodsContract
         {
             await TokenContractStub.Issue.SendAsync(new IssueInput
             {
-                Symbol = HamsterWoodsContractConstants.HalloweenBeanPassSymbol,
+                Symbol = HamsterWoodsContractConstants.HamsterPassSymbol,
                 Amount = 1,
                 Memo = "ddd",
                 To = DefaultAddress
@@ -398,7 +398,7 @@ namespace Contracts.HamsterWoodsContract
         {
             await TokenContractStub.Issue.SendAsync(new IssueInput
             {
-                Symbol = HamsterWoodsContractConstants.HalloweenBeanPassSymbol,
+                Symbol = HamsterWoodsContractConstants.HamsterPassSymbol,
                 Amount = 1,
                 Memo = "ddd",
                 To = DefaultAddress

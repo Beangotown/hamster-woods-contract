@@ -13,9 +13,9 @@ namespace Contracts.HamsterWoodsContract;
 
 public partial class HamsterWoodsContract
 {
-    private PlayerInformation InitPlayerInfo(bool resetStart)
+    private PlayerInformation SetPlayerInfo(bool resetStart)
     {
-        Assert(CheckBeanPass(Context.Sender).Value, "BeanPass Balance is not enough");
+        Assert(CheckHamsterPass(Context.Sender).Value, "BeanPass Balance is not enough");
         var playerInformation = GetCurrentPlayerInformation(Context.Sender, true);
         Assert(playerInformation.PlayableCount > 0 || playerInformation.PurchasedChancesCount > 0,
             "PlayableCount is not enough");
@@ -46,6 +46,12 @@ public partial class HamsterWoodsContract
             return false;
         }
 
+        if (!State.RaceConfig.Value.IsRace)
+        {
+            return false;
+        }
+
+        // weekNum from 1 as begin
         var beginWeekNum = Math.Max(State.CurrentWeek.Value - rankingRules.WeeklyTournamentBeginNum, 0);
         var tournamentHours = rankingRules.RankingHours.Add(rankingRules.PublicityHours);
         var beginTime = rankingRules.BeginTime.AddHours(tournamentHours.Mul(
@@ -88,10 +94,9 @@ public partial class HamsterWoodsContract
         if (IsWeekRanking())
         {
             var currentWeek = State.CurrentWeek.Value;
-            var realWeeklyBeans = (int)
-                Math.Min(playerInformation.TotalAcorns, State.UserWeeklyBeans[Context.Sender][currentWeek]);
-            playerInformation.WeeklyBeans = realWeeklyBeans.Add(boutInformation.Score);
-            State.UserWeeklyBeans[Context.Sender][currentWeek] = (int)playerInformation.WeeklyBeans;
+            var realWeeklyAcorns = State.UserWeeklyBeans[Context.Sender][currentWeek];
+            playerInformation.WeeklyAcorns = realWeeklyAcorns.Add(boutInformation.Score);
+            State.UserWeeklyBeans[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
         }
 
         playerInformation.TotalAcorns = playerInformation.TotalAcorns.Add(boutInformation.Score);
@@ -162,7 +167,7 @@ public partial class HamsterWoodsContract
 
         var gameLimitSettings = State.GameLimitSettings.Value;
         playerInformation.PlayableCount = GetPlayableCount(gameLimitSettings, playerInformation, nftEnough);
-        playerInformation.BeanPassOwned = nftEnough;
+        playerInformation.HamsterPassOwned = nftEnough;
         return playerInformation;
     }
 
@@ -240,5 +245,57 @@ public partial class HamsterWoodsContract
     {
         return (preGridNum + gridNum) %
                State.GridTypeList.Value.Value.Count;
+    }
+
+    private bool GetIsRace()
+    {
+        var rankingRules = State.RankingRules.Value;
+        if (rankingRules == null)
+        {
+            return false;
+        }
+
+        if (!State.RaceConfig.Value.IsRace)
+        {
+            return false;
+        }
+
+        // 0-6
+        var beginDay = State.RaceConfig.Value.StartDayOfWeek;
+        if (beginDay == 0)
+        {
+            beginDay = 7;
+        }
+
+        var endDay = State.RaceConfig.Value.StartDayOfWeek;
+        if (endDay == 0)
+        {
+            endDay = 7;
+        }
+
+        var days = Math.Abs(endDay - beginDay) + 1;
+
+        // var day1 = (Context.CurrentBlockTime-State.RaceConfig.Value.BeginTime);
+        // var durationSeconds=day1.Seconds;
+        // var rttr = (durationSeconds / 60 * 60) / 24;
+        // if (Context.CurrentBlockTime.CompareTo(beginTime) < 0)
+        // {
+        //     return false;
+        // }
+        //
+        // var endTime = rankingRules.BeginTime.AddHours(tournamentHours.Mul(beginWeekNum + 1));
+        // while (Context.CurrentBlockTime.CompareTo(endTime) > 0)
+        // {
+        //     beginWeekNum++;
+        //     endTime = endTime.AddHours(tournamentHours);
+        // }
+        //
+        // State.CurrentWeek.Value = rankingRules.WeeklyTournamentBeginNum + beginWeekNum;
+        // if (Context.CurrentBlockTime.CompareTo(endTime.AddHours(-rankingRules.PublicityHours)) > 0)
+        // {
+        //     return false;
+        // }
+
+        return true;
     }
 }

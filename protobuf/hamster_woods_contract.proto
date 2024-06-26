@@ -1,18 +1,5 @@
-/* This files is part of the Hello World smart contract example that is included in Boilerplate.
- * It is only the definition of the contract, implementation is located in the "contract" folder
- * and tests are located in the "test" folder.
- *
- * You can use this as a basic template for new contracts.
- * 
- * When building Boilerplate or the contract project located in the "../contract/AElf.Contracts.HamsterWoodsContract/" 
- * protoc (the protobuf compiler) will be invoked and this file will produce a .c.cs file and .g.cs file, in the 
- * "../contract/AElf.Contracts.HamsterWoodsContract/Protobuf/Generated/" folder. 
- */
-
-// the version of the language, use proto3 for contracts
 syntax = "proto3";
 
-// some core imports for aelf chain types
 import "aelf/core.proto";
 import "aelf/options.proto";
 import "google/protobuf/empty.proto";
@@ -20,21 +7,14 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "acs12.proto";
 
-// the name of the C# namespace in which the contract code will be,
-// generated code will also be in this namespace.
 option csharp_namespace = "Contracts.HamsterWoodsContract";
 
-// the contract definition: a gRPC service definition.
 service HamsterWoodsContract {
-
-  // the full name of the C# class that will contain the state (here <namespace>.<state-class-name> format).
+  
   option (aelf.csharp_state) = "Contracts.HamsterWoodsContract.HamsterWoodsContractState";
   option (aelf.base) = "acs12.proto";
-  // an action defined as a gRPC service method.
-  // this action take a google.protobuf.Empty (placeholder for void) as input
-  // and returns a custom defined type: HelloReturn.
-  //   method Play include Bingo
-  rpc Play (PlayInput) returns (PlayOutput) {
+
+  rpc Play (PlayInput) returns (google.protobuf.Empty) {
   }
 
   rpc PurchaseChance (google.protobuf.Int32Value) returns (google.protobuf.Empty) {
@@ -58,8 +38,23 @@ service HamsterWoodsContract {
   rpc SetPurchaseChanceConfig (PurchaseChanceConfig) returns (google.protobuf.Empty) {
   }
 
+  rpc SetUnlockManager (aelf.Address) returns (google.protobuf.Empty) {
+  }
+  
+  rpc BatchUnlockAcorns (UnlockAcornsInput) returns (google.protobuf.Empty) {
+  }
+
+  rpc StartRace (google.protobuf.Empty) returns (google.protobuf.Empty) {
+  }
+
+  rpc StopRace (google.protobuf.Empty) returns (google.protobuf.Empty) {
+  }
+
+  rpc SetRaceConfig (RaceConfig) returns (google.protobuf.Empty) {
+  }
+  
   // Views
-  rpc CheckBeanPass (aelf.Address) returns (google.protobuf.BoolValue) {
+  rpc CheckHamsterPass (aelf.Address) returns (google.protobuf.BoolValue) {
     option (aelf.is_view) = true;
   }
 
@@ -90,7 +85,10 @@ service HamsterWoodsContract {
   rpc GetPurchaseChanceConfig (google.protobuf.Empty) returns (PurchaseChanceConfig) {
     option (aelf.is_view) = true;
   }
-
+  
+  rpc GetRaceConfig (google.protobuf.Empty) returns (RaceConfig) {
+    option (aelf.is_view) = true;
+  }
 
 }
 
@@ -111,9 +109,9 @@ message PlayerInformation {
   int32 playable_count = 2;
   google.protobuf.Timestamp last_play_time = 3;
   int32 cur_grid_num = 4;
-  bool bean_pass_owned = 5;
+  bool hamster_pass_owned = 5;
   int64 total_acorns = 6;
-  int64 weekly_beans = 7;
+  int64 weekly_acorns = 7;
   int32 purchased_chances_count = 8;
   int64 last_bingo_block_height = 9;
   int64 locked_acorns = 10;
@@ -199,7 +197,7 @@ message PurchaseChanceConfig {
 }
 
 // LogEvent
-message Bingoed {
+message Picked {
   option (aelf.is_event) = true;
   GridType grid_type = 1;
   int32 grid_num = 2;
@@ -213,7 +211,15 @@ message Bingoed {
   int64 weekly_beans = 10;
   int64 total_beans = 11;
   int32 total_chance = 12;
+  bool is_race = 13;
+}
 
+message AcornsUnlocked {
+  option (aelf.is_event) = true;
+  aelf.Address from = 1;
+  aelf.Address to = 2;
+  string symbol = 3;
+  int64 amount = 4;
 }
 
 message PurchasedChance {
@@ -224,4 +230,31 @@ message PurchasedChance {
   int64 weekly_beans = 4;
   int64 total_beans = 5;
   int32 total_chance = 6;
+}
+
+message LockedAcornsInfoList {
+  repeated LockedAcornsInfo value = 1;
+}
+
+message LockedAcornsInfo {
+  int32 week = 1;
+  int64 acorns = 2;
+  bool is_unlocked = 3;
+}
+
+message UnlockAcornsInput {
+  repeated aelf.Address value = 1;
+}
+
+message ManagerList {
+  repeated aelf.Address value = 1;
+}
+
+message RaceConfig {
+  google.protobuf.Timestamp begin_time = 1;
+  google.protobuf.Timestamp end_time = 2;
+  int32 start_day_of_week = 3;
+  int32 end_day_of_week = 4;
+  int32 settle_day_of_week = 5;
+  bool is_race = 6;
 }

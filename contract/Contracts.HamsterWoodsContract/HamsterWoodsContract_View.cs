@@ -51,28 +51,23 @@ public partial class HamsterWoodsContract
 
     public override PlayerInformation GetPlayerInformation(Address owner)
     {
-        var playerInformation = GetCurrentPlayerInformation(owner, CheckBeanPass(owner).Value);
+        var playerInformation = GetCurrentPlayerInformation(owner, CheckHamsterPass(owner).Value);
         return playerInformation;
     }
     
-    public override BoolValue CheckBeanPass(Address owner)
+    public override BoolValue CheckHamsterPass(Address owner)
     {
         var getBalanceOutput = State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
-            Symbol = HamsterWoodsContractConstants.BeanPassSymbol,
+            Symbol = HamsterWoodsContractConstants.HamsterPassSymbol,
             Owner = owner
         });
-        if (getBalanceOutput.Balance > 0)
-        {
-            return new BoolValue { Value = true };
-        }
 
-        getBalanceOutput = State.TokenContract.GetBalance.Call(new GetBalanceInput
-        {
-            Symbol = HamsterWoodsContractConstants.HalloweenBeanPassSymbol,
-            Owner = owner
-        });
         return new BoolValue { Value = getBalanceOutput.Balance > 0 };
     }
 
+    public override RaceConfig GetRaceConfig(Empty input)
+    {
+        return State.RaceConfig.Value;
+    }
 }
