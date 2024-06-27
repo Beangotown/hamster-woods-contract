@@ -239,7 +239,8 @@ message LockedAcornsInfoList {
 message LockedAcornsInfo {
   int32 week = 1;
   int64 acorns = 2;
-  bool is_unlocked = 3;
+  google.protobuf.Timestamp settle_time = 3;
+  bool is_unlocked = 4;
 }
 
 message UnlockAcornsInput {
@@ -257,4 +258,11 @@ message RaceConfig {
   int32 end_day_of_week = 4;
   int32 settle_day_of_week = 5;
   bool is_race = 6;
+}
+
+message RaceTimeInfo{
+  google.protobuf.Timestamp begin_time = 1;
+  google.protobuf.Timestamp end_time = 2;
+  google.protobuf.Timestamp settle_begin_time = 3;
+  google.protobuf.Timestamp settle_end_time = 4;
 }

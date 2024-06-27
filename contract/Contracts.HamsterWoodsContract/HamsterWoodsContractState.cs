@@ -30,5 +30,6 @@ public partial class HamsterWoodsContractState : ContractState
     public MappedState<Address,LockedAcornsInfoList> LockedAcornsInfoList { get; set; }
     public SingletonState<ManagerList> ManagerList { get; set; } 
     public SingletonState<RaceConfig> RaceConfig { get; set; } 
+    public SingletonState<RaceTimeInfo> RaceTimeInfo { get; set; } 
 
 }

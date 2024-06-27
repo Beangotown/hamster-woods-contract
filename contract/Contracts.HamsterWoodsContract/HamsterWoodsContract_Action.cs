@@ -63,8 +63,8 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         SetBoutInformationBingoInfo(boutInformation.PlayId, randomHash, playerInformation, boutInformation);
         SetPlayerInformation(playerInformation, boutInformation);
 
-        // lock acorns
-        playerInformation.LockedAcorns += boutInformation.Score;
+        // not include race. and settle end time not set
+        SetLockedAcornsInfo(Context.Sender, boutInformation.Score);
 
         Context.Fire(new Picked
         {
@@ -86,9 +86,49 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             WeeklyBeans = playerInformation.WeeklyAcorns,
             TotalBeans = playerInformation.TotalAcorns,
             TotalChance = playerInformation.PurchasedChancesCount,
-            IsRace = State.RaceConfig.Value.IsRace
+            //IsRace = State.RaceConfig.Value.IsRace
         });
         return new Empty();
+    }
+
+    private void SetLockedAcornsInfo(Address address, int score)
+    {
+        var lockedAcornsInfoList = State.LockedAcornsInfoList[address];
+        var weekNum = State.CurrentWeek.Value;
+        if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null || lockedAcornsInfoList.Value.Count == 0)
+        {
+            State.LockedAcornsInfoList[address] = new LockedAcornsInfoList
+            {
+                Value =
+                {
+                    new LockedAcornsInfo
+                    {
+                        Acorns = score,
+                        Week = weekNum,
+                        //SettleTime = State.RaceTimeInfo.Value.SettleEndTime,  //Value is null
+                        IsUnlocked = false
+                    }
+                }
+            };
+
+            return;
+        }
+
+        var lockedInfo = lockedAcornsInfoList.Value.FirstOrDefault(t => t.Week == weekNum);
+        if (lockedInfo == null)
+        {
+            lockedAcornsInfoList.Value.Add(new LockedAcornsInfo()
+            {
+                Acorns = score,
+                Week = weekNum,
+                SettleTime = State.RaceTimeInfo.Value.SettleEndTime,
+                IsUnlocked = false
+            });
+        }
+        else
+        {
+            lockedInfo.Acorns += score;
+        }
     }
 
     public override Empty PurchaseChance(Int32Value input)
@@ -97,7 +137,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         Assert(acornsAmount > 0, "PurchaseChance is not allowed");
         var playerInformation = SetPlayerInfo(false);
         ReSetPlayerAcorns(playerInformation);
-        Assert(playerInformation.TotalAcorns >= input.Value * acornsAmount, "Acorn is not enough");
+        Assert(playerInformation.TotalAcorns >= input.Value * acornsAmount, "Acorns is not enough");
         Assert(
             GetRemainingDailyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) <=
             input.Value, "Purchase chance is not enough");
@@ -113,7 +153,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             Symbol = HamsterWoodsContractConstants.AcornSymbol,
             Memo = "PurchaseChance"
         });
-        
+
         Context.Fire(new PurchasedChance
         {
             PlayerAddress = Context.Sender,

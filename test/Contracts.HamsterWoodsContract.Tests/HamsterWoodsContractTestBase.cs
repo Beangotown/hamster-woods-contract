@@ -35,8 +35,8 @@ namespace Contracts.HamsterWoodsContract
             AsyncHelper.RunSync(() => CreateSeedNftCollection(TokenContractStub));
             AsyncHelper.RunSync(() => CreateNftCollectionAsync(TokenContractStub,new CreateInput
             {
-                Symbol = "BEANPASS-0",
-                TokenName = "BeanPassSymbol collection",
+                Symbol = "HAMSTERPASS-0",
+                TokenName = "HamsterPassSymbol collection",
                 TotalSupply = 10,
                 Decimals = 0,
                 Issuer = DefaultAddress,
@@ -48,7 +48,7 @@ namespace Contracts.HamsterWoodsContract
             AsyncHelper.RunSync(() => CreateNftAsync(TokenContractStub, new CreateInput()
             {
                 Symbol = HamsterWoodsContractConstants.HamsterPassSymbol,
-                TokenName = "BeanPassSymbol",
+                TokenName = "HamsterPassSymbol",
                 TotalSupply = 100,
                 Decimals = 0,
                 Issuer = DefaultAddress,
@@ -58,7 +58,7 @@ namespace Contracts.HamsterWoodsContract
             AsyncHelper.RunSync(() => CreateNftCollectionAsync(TokenContractStub, new CreateInput()
             {
                 Symbol = HamsterWoodsContractConstants.AcornSymbol,
-                TokenName = "BeanSymbol",
+                TokenName = "AcornsSymbol",
                 TotalSupply = 100000000000000,
                 Decimals = 2,
                 Issuer = DefaultAddress,

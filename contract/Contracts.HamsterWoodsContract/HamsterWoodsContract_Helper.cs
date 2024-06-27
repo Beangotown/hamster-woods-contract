@@ -15,7 +15,7 @@ public partial class HamsterWoodsContract
 {
     private PlayerInformation SetPlayerInfo(bool resetStart)
     {
-        Assert(CheckHamsterPass(Context.Sender).Value, "BeanPass Balance is not enough");
+        Assert(CheckHamsterPass(Context.Sender).Value, "HamsterPass Balance is not enough");
         var playerInformation = GetCurrentPlayerInformation(Context.Sender, true);
         Assert(playerInformation.PlayableCount > 0 || playerInformation.PurchasedChancesCount > 0,
             "PlayableCount is not enough");
@@ -51,7 +51,13 @@ public partial class HamsterWoodsContract
             return false;
         }
 
-        // weekNum from 1 as begin
+        var startTime = State.RaceConfig.Value.BeginTime;
+        // race not start, first time
+        if (Context.CurrentBlockTime.CompareTo(startTime) < 0)
+        {
+            return false;
+        }
+
         var beginWeekNum = Math.Max(State.CurrentWeek.Value - rankingRules.WeeklyTournamentBeginNum, 0);
         var tournamentHours = rankingRules.RankingHours.Add(rankingRules.PublicityHours);
         var beginTime = rankingRules.BeginTime.AddHours(tournamentHours.Mul(
@@ -91,7 +97,7 @@ public partial class HamsterWoodsContract
 
         playerInformation.LastPlayTime = Context.CurrentBlockTime;
         playerInformation.CurGridNum = boutInformation.EndGridNum;
-        if (IsWeekRanking())
+        if (IsRace())
         {
             var currentWeek = State.CurrentWeek.Value;
             var realWeeklyAcorns = State.UserWeeklyBeans[Context.Sender][currentWeek];
@@ -99,7 +105,7 @@ public partial class HamsterWoodsContract
             State.UserWeeklyBeans[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
         }
 
-        playerInformation.TotalAcorns = playerInformation.TotalAcorns.Add(boutInformation.Score);
+        playerInformation.LockedAcorns = playerInformation.LockedAcorns.Add(boutInformation.Score);
         State.PlayerInformation[boutInformation.PlayerAddress] = playerInformation;
     }
 
@@ -211,7 +217,7 @@ public partial class HamsterWoodsContract
                                                                      purchaseCountResetTime) >
                                                                  -1))
         {
-            return 0;
+            return purchaseChanceConfig.DailyPurchaseCount;
         }
 
         return playerInformation.DailyPurchasedChancesCount;
@@ -247,7 +253,7 @@ public partial class HamsterWoodsContract
                State.GridTypeList.Value.Value.Count;
     }
 
-    private bool GetIsRace()
+    private bool IsRace()
     {
         var rankingRules = State.RankingRules.Value;
         if (rankingRules == null)
@@ -256,6 +262,13 @@ public partial class HamsterWoodsContract
         }
 
         if (!State.RaceConfig.Value.IsRace)
+        {
+            return false;
+        }
+
+        var beginTime = State.RaceConfig.Value.BeginTime;
+        // race not start, first time
+        if (Context.CurrentBlockTime.CompareTo(beginTime) < 0)
         {
             return false;
         }
@@ -275,27 +288,36 @@ public partial class HamsterWoodsContract
 
         var days = Math.Abs(endDay - beginDay) + 1;
 
-        // var day1 = (Context.CurrentBlockTime-State.RaceConfig.Value.BeginTime);
-        // var durationSeconds=day1.Seconds;
-        // var rttr = (durationSeconds / 60 * 60) / 24;
-        // if (Context.CurrentBlockTime.CompareTo(beginTime) < 0)
-        // {
-        //     return false;
-        // }
-        //
-        // var endTime = rankingRules.BeginTime.AddHours(tournamentHours.Mul(beginWeekNum + 1));
-        // while (Context.CurrentBlockTime.CompareTo(endTime) > 0)
-        // {
-        //     beginWeekNum++;
-        //     endTime = endTime.AddHours(tournamentHours);
-        // }
-        //
-        // State.CurrentWeek.Value = rankingRules.WeeklyTournamentBeginNum + beginWeekNum;
-        // if (Context.CurrentBlockTime.CompareTo(endTime.AddHours(-rankingRules.PublicityHours)) > 0)
-        // {
-        //     return false;
-        // }
+        //var raceTime = days * 24;
+        var raceEndTime = beginTime.AddDays(days);
+        // beginTime < Context.CurrentBlockTime < raceEndTime
+        if (Context.CurrentBlockTime.CompareTo(raceEndTime) < 0)
+        {
+            return true;
+        }
 
-        return true;
+        // Context.CurrentBlockTime > raceEndTime
+        var settleEndTime = raceEndTime.AddDays(1);
+        if (Context.CurrentBlockTime.CompareTo(settleEndTime) < 0)
+        {
+            return false;
+        }
+
+        // Context.CurrentBlockTime > settleEndTime
+
+        var nextBeginTime = settleEndTime;
+        var nextEndTime = settleEndTime.AddDays(days);
+
+        if (Context.CurrentBlockTime.CompareTo(nextBeginTime) > 0 &&
+            Context.CurrentBlockTime.CompareTo(nextEndTime) < 0)
+        {
+            State.CurrentWeek.Value = State.CurrentWeek.Value + 1;
+            State.RaceTimeInfo.Value.BeginTime = nextBeginTime;
+            State.RaceTimeInfo.Value.EndTime = nextEndTime;
+            
+            return true;
+        }
+
+        return false;
     }
 }

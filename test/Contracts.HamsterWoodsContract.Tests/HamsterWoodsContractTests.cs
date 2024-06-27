@@ -25,7 +25,7 @@ namespace Contracts.HamsterWoodsContract
             {
                 ResetStart = true
             });
-            tx.TransactionResult.Error.ShouldContain("BeanPass Balance is not enough");
+            tx.TransactionResult.Error.ShouldContain("HamsterPass Balance is not enough");
         }
 
 
@@ -82,7 +82,6 @@ namespace Contracts.HamsterWoodsContract
         [Fact]
         public async Task SetLimitSettingsTests()
         {
-
             var settings = await HamsterWoodsContractStub.GetGameLimitSettings.CallAsync(new Empty());
             settings.DailyMaxPlayCount.ShouldBe(HamsterWoodsContractConstants.DailyMaxPlayCount);
             settings.DailyPlayCountResetHours.ShouldBe(HamsterWoodsContractConstants.DailyPlayCountResetHours);
@@ -106,7 +105,6 @@ namespace Contracts.HamsterWoodsContract
         [Fact]
         public async Task SetLimitSettingsTests_Fail_NoPermission()
         {
-
             var result = await UserStub.SetGameLimitSettings.SendWithExceptionAsync(new GameLimitSettings()
             {
                 DailyMaxPlayCount = 6,
@@ -155,10 +153,10 @@ namespace Contracts.HamsterWoodsContract
 
 
         [Fact]
-        public async Task CheckBeanPass_Test()
+        public async Task CheckHamsterPass_Test()
         {
             await PlayInitAsync();
-            var BalanceRe = await HamsterWoodsContractStub.CheckBeanPass.CallAsync(DefaultAddress);
+            var BalanceRe = await HamsterWoodsContractStub.CheckHamsterPass.CallAsync(DefaultAddress);
             BalanceRe.Value.ShouldBe(true);
         }
 
@@ -176,7 +174,8 @@ namespace Contracts.HamsterWoodsContract
             }
 
             var playerInfo = await HamsterWoodsContractStub.GetPlayerInformation.CallAsync(DefaultAddress);
-            playerInfo.TotalAcorns.ShouldBe(sumScore);
+            playerInfo.LockedAcorns.ShouldBe(sumScore);
+            playerInfo.TotalAcorns.ShouldBe(0);
             playerInfo.CurGridNum.ShouldBe(sumGridNum);
         }
 
@@ -337,10 +336,16 @@ namespace Contracts.HamsterWoodsContract
                 {
                     AcornsAmount = 0
                 });
-            result.TransactionResult.Error.ShouldContain("Invalid BeansAmount");
-            result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
+            result.TransactionResult.Error.ShouldContain("Invalid AcornsAmount");
+            result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendWithExceptionAsync(new PurchaseChanceConfig
             {
                 AcornsAmount = 10
+            });
+            result.TransactionResult.Error.ShouldContain("Invalid DailyPurchaseCount");
+            result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
+            {
+                AcornsAmount = 10,
+                DailyPurchaseCount = 10
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             var purchaseChanceConfig = await HamsterWoodsContractStub.GetPurchaseChanceConfig.CallAsync(new Empty());
@@ -361,6 +366,15 @@ namespace Contracts.HamsterWoodsContract
                 PublicityPlayerCount = 2,
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
+            var setRaceConfigResult = await HamsterWoodsContractStub.SetRaceConfig.SendAsync(new RaceConfig
+            {
+                BeginTime = DateTime.UtcNow.AddDays(-1).ToTimestamp(),
+                StartDayOfWeek = 2,
+                EndDayOfWeek = 0,
+                SettleDayOfWeek = 1,
+                IsRace = true
+            });
+            setRaceConfigResult.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             int sumScore = 0;
             int sumGridNum = 0;
             for (int i = 0; i < 5; i++)
@@ -371,8 +385,9 @@ namespace Contracts.HamsterWoodsContract
             }
 
             var playerInfo = await HamsterWoodsContractStub.GetPlayerInformation.CallAsync(DefaultAddress);
-            playerInfo.TotalAcorns.ShouldBe(sumScore);
-            playerInfo.WeeklyBeans.ShouldBe(sumScore);
+            playerInfo.TotalAcorns.ShouldBe(0);
+            playerInfo.LockedAcorns.ShouldBe(sumScore);
+            playerInfo.WeeklyAcorns.ShouldBe(sumScore);
             playerInfo.PlayableCount.ShouldBe(HamsterWoodsContractConstants.DailyMaxPlayCount - 5);
         }
 
@@ -382,7 +397,8 @@ namespace Contracts.HamsterWoodsContract
             await PurchaseChanceInit();
             var result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
             {
-                AcornsAmount = 10
+                AcornsAmount = 10,
+                DailyPurchaseCount = 20
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             result = await HamsterWoodsContractStub.PurchaseChance.SendAsync(new Int32Value
