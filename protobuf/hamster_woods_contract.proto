@@ -208,8 +208,8 @@ message Picked {
   DiceList dice_numbers = 7;
   int32 start_grid_num = 8;
   int32 end_grid_num = 9;
-  int64 weekly_beans = 10;
-  int64 total_beans = 11;
+  int64 weekly_acorns = 10;
+  int64 total_acorns = 11;
   int32 total_chance = 12;
   bool is_race = 13;
 }
@@ -225,10 +225,10 @@ message AcornsUnlocked {
 message PurchasedChance {
   option (aelf.is_event) = true;
   aelf.Address player_address = 1;
-  int32 beans_amount = 2;
+  int32 acorns_amount = 2;
   int32 chance_count = 3;
-  int64 weekly_beans = 4;
-  int64 total_beans = 5;
+  int64 weekly_acorns = 4;
+  int64 total_acorns = 5;
   int32 total_chance = 6;
 }
 

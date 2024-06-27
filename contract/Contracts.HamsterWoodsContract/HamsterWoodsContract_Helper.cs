@@ -100,9 +100,9 @@ public partial class HamsterWoodsContract
         if (IsRace())
         {
             var currentWeek = State.CurrentWeek.Value;
-            var realWeeklyAcorns = State.UserWeeklyBeans[Context.Sender][currentWeek];
+            var realWeeklyAcorns = State.UserWeeklyAcorns[Context.Sender][currentWeek];
             playerInformation.WeeklyAcorns = realWeeklyAcorns.Add(boutInformation.Score);
-            State.UserWeeklyBeans[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
+            State.UserWeeklyAcorns[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
         }
 
         playerInformation.LockedAcorns = playerInformation.LockedAcorns.Add(boutInformation.Score);

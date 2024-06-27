@@ -83,8 +83,8 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             },
             StartGridNum = boutInformation.StartGridNum,
             EndGridNum = boutInformation.EndGridNum,
-            WeeklyBeans = playerInformation.WeeklyAcorns,
-            TotalBeans = playerInformation.TotalAcorns,
+            WeeklyAcorns = playerInformation.WeeklyAcorns,
+            TotalAcorns = playerInformation.TotalAcorns,
             TotalChance = playerInformation.PurchasedChancesCount,
             //IsRace = State.RaceConfig.Value.IsRace
         });
@@ -157,10 +157,10 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         Context.Fire(new PurchasedChance
         {
             PlayerAddress = Context.Sender,
-            BeansAmount = input.Value * acornsAmount,
+            AcornsAmount = input.Value * acornsAmount,
             ChanceCount = input.Value,
-            WeeklyBeans = playerInformation.WeeklyAcorns,
-            TotalBeans = playerInformation.TotalAcorns,
+            WeeklyAcorns = playerInformation.WeeklyAcorns,
+            TotalAcorns = playerInformation.TotalAcorns,
             TotalChance = playerInformation.PurchasedChancesCount
         });
         return new Empty();
