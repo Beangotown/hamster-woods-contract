@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
 using Volo.Abp.Modularity;
 
-namespace Contracts.HamsterWoodsContract
+namespace Contracts.HamsterWoods.Tests
 {
     [DependsOn(typeof(MainChainDAppContractTestModule))]
     public class HamsterWoodsContractTestModule : MainChainDAppContractTestModule

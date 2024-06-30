@@ -5,7 +5,7 @@ using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
 
-namespace Contracts.HamsterWoodsContract;
+namespace Contracts.HamsterWoods;
 
 public partial class HamsterWoodsContract : HamsterWoodsContractContainer.HamsterWoodsContractBase
 {

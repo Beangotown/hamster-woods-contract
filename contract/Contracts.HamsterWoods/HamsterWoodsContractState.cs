@@ -1,7 +1,7 @@
 using AElf.Sdk.CSharp.State;
 using AElf.Types;
 
-namespace Contracts.HamsterWoodsContract;
+namespace Contracts.HamsterWoods;
 
 /// <summary>
 ///     The state class of the contract, it inherits from the AElf.Sdk.CSharp.State.ContractState type.

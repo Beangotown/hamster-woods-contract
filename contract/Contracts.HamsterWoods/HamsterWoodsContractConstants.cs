@@ -1,4 +1,4 @@
-namespace Contracts.HamsterWoodsContract;
+namespace Contracts.HamsterWoods;
 
 public class HamsterWoodsContractConstants
 {

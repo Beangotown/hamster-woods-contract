@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>Contracts.HamsterWoodsContract</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -84,7 +83,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\contract\Contracts.HamsterWoodsContract\Contracts.HamsterWoodsContract.csproj" />
+    <ProjectReference Include="..\..\contract\Contracts.HamsterWoods\Contracts.HamsterWoods.csproj" />
     <ProjectReference Include="..\..\src\AElf.Boilerplate.TestBase\AElf.Boilerplate.TestBase.csproj" />
   </ItemGroup>
 

@@ -7,11 +7,11 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "acs12.proto";
 
-option csharp_namespace = "Contracts.HamsterWoodsContract";
+option csharp_namespace = "Contracts.HamsterWoods";
 
 service HamsterWoodsContract {
   
-  option (aelf.csharp_state) = "Contracts.HamsterWoodsContract.HamsterWoodsContractState";
+  option (aelf.csharp_state) = "Contracts.HamsterWoods.HamsterWoodsContractState";
   option (aelf.base) = "acs12.proto";
 
   rpc Play (PlayInput) returns (google.protobuf.Empty) {

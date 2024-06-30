@@ -6,10 +6,11 @@ using AElf.Contracts.Consensus.AEDPoS;
 using AElf.Contracts.MultiToken;
 using AElf.Cryptography.ECDSA;
 using AElf.Types;
+using Contracts.HamsterWoods;
 using Google.Protobuf.WellKnownTypes;
 using Volo.Abp.Threading;
 
-namespace Contracts.HamsterWoodsContract
+namespace Contracts.HamsterWoods.Tests
 {
     public class HamsterWoodsContractTestBase : DAppContractTestBase<HamsterWoodsContractTestModule>
     {

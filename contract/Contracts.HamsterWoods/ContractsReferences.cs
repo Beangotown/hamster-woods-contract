@@ -1,7 +1,7 @@
 using AElf.Contracts.Consensus.AEDPoS;
 using AElf.Contracts.MultiToken;
 
-namespace Contracts.HamsterWoodsContract
+namespace Contracts.HamsterWoods
 {
     public partial class HamsterWoodsContractState
     {

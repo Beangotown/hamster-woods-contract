@@ -3,7 +3,7 @@ using AElf.Boilerplate.TestBase;
 using AElf.Kernel.SmartContract.Application;
 using AElf.Types;
 
-namespace Contracts.HamsterWoodsContract
+namespace Contracts.HamsterWoods.Tests
 {
     public class HamsterWoodsContractInitializationProvider : IContractInitializationProvider
     {

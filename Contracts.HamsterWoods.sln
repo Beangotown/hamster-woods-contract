@@ -22,9 +22,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Boilerplate.SystemTran
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Boilerplate.ContractPatcher", "src\AElf.Boilerplate.ContractPatcher\AElf.Boilerplate.ContractPatcher.csproj", "{DCC207EA-842A-4B54-858B-295CAA8947D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts.HamsterWoodsContract.Tests", "test\Contracts.HamsterWoodsContract.Tests\Contracts.HamsterWoodsContract.Tests.csproj", "{69BAB224-E96D-4B9C-9902-1A1969BFC81E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts.HamsterWoods.Tests", "test\Contracts.HamsterWoods.Tests\Contracts.HamsterWoods.Tests.csproj", "{69BAB224-E96D-4B9C-9902-1A1969BFC81E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts.HamsterWoodsContract", "contract\Contracts.HamsterWoodsContract\Contracts.HamsterWoodsContract.csproj", "{6D29155A-DB29-44AE-A8FA-1D09D23A4132}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts.HamsterWoods", "contract\Contracts.HamsterWoods\Contracts.HamsterWoods.csproj", "{6D29155A-DB29-44AE-A8FA-1D09D23A4132}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AElf.Boilerplate.HamsterWoodsContract.Launcher", "src\AElf.Boilerplate.BeangoTownContract.Launcher\AElf.Boilerplate.HamsterWoodsContract.Launcher.csproj", "{61D5E6C5-0FE9-4F06-B29F-8AF2F8571E0D}"
 EndProject
