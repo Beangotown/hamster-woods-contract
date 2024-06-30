@@ -52,7 +52,7 @@ public partial class HamsterWoodsContract
     {
         Assert(State.Admin.Value == Context.Sender, "No permission.");
         Assert(input.AcornsAmount > 0, "Invalid AcornsAmount.");
-        Assert(input.DailyPurchaseCount > 0, "Invalid DailyPurchaseCount.");
+        Assert(input.WeeklyPurchaseCount > 0, "Invalid WeeklyPurchaseCount.");
         State.PurchaseChanceConfig.Value = input;
         return new Empty();
     }

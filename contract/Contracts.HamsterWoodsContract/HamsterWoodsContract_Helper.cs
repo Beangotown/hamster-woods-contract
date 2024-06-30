@@ -100,8 +100,8 @@ public partial class HamsterWoodsContract
         if (IsRace())
         {
             var currentWeek = State.CurrentWeek.Value;
-            var realWeeklyAcorns = State.UserWeeklyAcorns[Context.Sender][currentWeek];
-            playerInformation.WeeklyAcorns = realWeeklyAcorns.Add(boutInformation.Score);
+            var weeklyAcorns = State.UserWeeklyAcorns[Context.Sender][currentWeek];
+            playerInformation.WeeklyAcorns = weeklyAcorns.Add(boutInformation.Score);
             State.UserWeeklyAcorns[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
         }
 
@@ -205,11 +205,11 @@ public partial class HamsterWoodsContract
     {
         var now = Context.CurrentBlockTime.ToDateTime();
         var purchaseCountResetTime =
-            new DateTime(now.Year, now.Month, now.Day, purchaseChanceConfig.DailyPurchaseCountResetHour, 0, 0,
+            new DateTime(now.Year, now.Month, now.Day, purchaseChanceConfig.WeeklyPurchaseCountResetHour, 0, 0,
                 DateTimeKind.Utc).ToTimestamp();
         // LastPlayTime ,CurrentTime must not be same DayField
         if (playerInformation.LastPurchaseChanceTime == null || Context.CurrentBlockTime.CompareTo(
-                                                                 playerInformation.LastPurchaseChanceTime.AddDays(1)
+                                                                 playerInformation.LastPurchaseChanceTime.AddDays(7)
                                                              ) > -1
                                                              || (playerInformation.LastPurchaseChanceTime.CompareTo(
                                                                      purchaseCountResetTime) == -1 &&
@@ -217,17 +217,17 @@ public partial class HamsterWoodsContract
                                                                      purchaseCountResetTime) >
                                                                  -1))
         {
-            return purchaseChanceConfig.DailyPurchaseCount;
+            return purchaseChanceConfig.WeeklyPurchaseCount;
         }
 
-        return playerInformation.DailyPurchasedChancesCount;
+        return playerInformation.WeeklyPurchasedChancesCount;
     }
 
     private Int32 GetRemainingDailyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
         PlayerInformation playerInformation)
     {
         var purchasedCount = GetDailyPurchasedChanceCount(purchaseChanceConfig, playerInformation);
-        return purchaseChanceConfig.DailyPurchaseCount - purchasedCount;
+        return purchaseChanceConfig.WeeklyPurchaseCount - purchasedCount;
     }
 
     private List<int> GetDices(Hash hashValue, int diceCount)

@@ -116,7 +116,7 @@ message PlayerInformation {
   int64 last_bingo_block_height = 9;
   int64 locked_acorns = 10;
   google.protobuf.Timestamp last_purchase_chance_time = 11;
-  int32 daily_purchased_chances_count = 12;
+  int32 weekly_purchased_chances_count = 12;
 }
 
 
@@ -191,9 +191,9 @@ message RewardRule {
 }
 
 message PurchaseChanceConfig {
-  int32 daily_purchase_count = 1;
+  int32 weekly_purchase_count = 1;
   int32 acorns_amount = 2;
-  int32 daily_purchase_count_reset_hour = 3;
+  int32 weekly_purchase_count_reset_hour = 3;
 }
 
 // LogEvent

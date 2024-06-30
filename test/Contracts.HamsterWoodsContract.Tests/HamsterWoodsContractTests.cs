@@ -345,7 +345,7 @@ namespace Contracts.HamsterWoodsContract
             result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
             {
                 AcornsAmount = 10,
-                DailyPurchaseCount = 10
+                WeeklyPurchaseCount = 10
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             var purchaseChanceConfig = await HamsterWoodsContractStub.GetPurchaseChanceConfig.CallAsync(new Empty());
@@ -398,7 +398,7 @@ namespace Contracts.HamsterWoodsContract
             var result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
             {
                 AcornsAmount = 10,
-                DailyPurchaseCount = 20
+                WeeklyPurchaseCount = 20
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
             result = await HamsterWoodsContractStub.PurchaseChance.SendAsync(new Int32Value
