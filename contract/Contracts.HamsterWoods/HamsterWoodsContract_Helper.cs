@@ -14,10 +14,7 @@ public partial class HamsterWoodsContract
 {
     private PlayerInformation SetPlayerInfo(bool resetStart)
     {
-        Assert(CheckHamsterPass(Context.Sender).Value, "HamsterPass Balance is not enough");
         var playerInformation = GetCurrentPlayerInformation(Context.Sender, true);
-        Assert(playerInformation.PlayableCount > 0 || playerInformation.PurchasedChancesCount > 0,
-            "PlayableCount is not enough");
         if (resetStart)
         {
             playerInformation.CurGridNum = 0;
@@ -35,51 +32,6 @@ public partial class HamsterWoodsContract
             Symbol = HamsterWoodsContractConstants.AcornSymbol
         }).Balance;
         playerInformation.TotalAcorns = acornBalance;
-    }
-
-    private bool IsWeekRanking()
-    {
-        var rankingRules = State.RankingRules.Value;
-        if (rankingRules == null)
-        {
-            return false;
-        }
-
-        if (!State.RaceConfig.Value.IsRace)
-        {
-            return false;
-        }
-
-        var startTime = State.RaceConfig.Value.BeginTime;
-        // race not start, first time
-        if (Context.CurrentBlockTime.CompareTo(startTime) < 0)
-        {
-            return false;
-        }
-
-        var beginWeekNum = Math.Max(State.CurrentWeek.Value - rankingRules.WeeklyTournamentBeginNum, 0);
-        var tournamentHours = rankingRules.RankingHours.Add(rankingRules.PublicityHours);
-        var beginTime = rankingRules.BeginTime.AddHours(tournamentHours.Mul(
-            beginWeekNum));
-        if (Context.CurrentBlockTime.CompareTo(beginTime) < 0)
-        {
-            return false;
-        }
-
-        var endTime = rankingRules.BeginTime.AddHours(tournamentHours.Mul(beginWeekNum + 1));
-        while (Context.CurrentBlockTime.CompareTo(endTime) > 0)
-        {
-            beginWeekNum++;
-            endTime = endTime.AddHours(tournamentHours);
-        }
-
-        State.CurrentWeek.Value = rankingRules.WeeklyTournamentBeginNum + beginWeekNum;
-        if (Context.CurrentBlockTime.CompareTo(endTime.AddHours(-rankingRules.PublicityHours)) > 0)
-        {
-            return false;
-        }
-
-        return true;
     }
 
 
@@ -103,7 +55,7 @@ public partial class HamsterWoodsContract
         State.UserWeeklyAcorns[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
 
         playerInformation.LockedAcorns = playerInformation.LockedAcorns.Add(boutInformation.Score);
-        playerInformation.SumScores.Add(boutInformation.Score);
+        playerInformation.SumScores = playerInformation.SumScores.Add(boutInformation.Score);
         State.PlayerInformation[boutInformation.PlayerAddress] = playerInformation;
     }
 
@@ -196,27 +148,15 @@ public partial class HamsterWoodsContract
             return gameLimitSettings.DailyMaxPlayCount;
         }
 
-        return playerInformation.PlayableCount;
+        return playerInformation.PlayableCount + 100;
     }
 
-    private Int32 GetDailyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
+    private Int32 GeWeeklyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
         PlayerInformation playerInformation)
     {
-        var now = Context.CurrentBlockTime.ToDateTime();
-        var purchaseCountResetTime =
-            new DateTime(now.Year, now.Month, now.Day, purchaseChanceConfig.WeeklyPurchaseCountResetHour, 0, 0,
-                DateTimeKind.Utc).ToTimestamp();
-        // LastPlayTime ,CurrentTime must not be same DayField
-        if (playerInformation.LastPurchaseChanceTime == null || Context.CurrentBlockTime.CompareTo(
-                                                                 playerInformation.LastPurchaseChanceTime.AddDays(7)
-                                                             ) > -1
-                                                             || (playerInformation.LastPurchaseChanceTime.CompareTo(
-                                                                     purchaseCountResetTime) == -1 &&
-                                                                 Context.CurrentBlockTime.CompareTo(
-                                                                     purchaseCountResetTime) >
-                                                                 -1))
+        if (Context.CurrentBlockTime.CompareTo(State.RaceTimeInfo.Value.BeginTime) > 0)
         {
-            return purchaseChanceConfig.WeeklyPurchaseCount;
+            return 0;
         }
 
         return playerInformation.WeeklyPurchasedChancesCount;
@@ -225,7 +165,7 @@ public partial class HamsterWoodsContract
     private Int32 GetRemainingDailyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
         PlayerInformation playerInformation)
     {
-        var purchasedCount = GetDailyPurchasedChanceCount(purchaseChanceConfig, playerInformation);
+        var purchasedCount = GeWeeklyPurchasedChanceCount(purchaseChanceConfig, playerInformation);
         return purchaseChanceConfig.WeeklyPurchaseCount - purchasedCount;
     }
 
@@ -261,10 +201,10 @@ public partial class HamsterWoodsContract
                 BeginTime = beginTime,
                 EndTime = calibrationTime.AddHours(gameHours)
             };
-            
+
             return;
         }
-
+        
         State.RaceTimeInfo.Value.BeginTime = State.RaceConfig.Value.BeginTime;
         State.RaceTimeInfo.Value.EndTime =
             State.RaceConfig.Value.CalibrationTime.AddHours(State.RaceConfig.Value.GameHours);
@@ -273,13 +213,16 @@ public partial class HamsterWoodsContract
     private int GetWeekNum()
     {
         var raceTimeInfo = State.RaceTimeInfo.Value;
-
-        // can i use while?
         while (Context.CurrentBlockTime.CompareTo(raceTimeInfo.EndTime) > 0)
         {
             raceTimeInfo.BeginTime = raceTimeInfo.EndTime;
             raceTimeInfo.EndTime = raceTimeInfo.EndTime.AddHours(State.RaceConfig.Value.GameHours);
             State.CurrentWeek.Value.Add(1);
+        }
+
+        if (State.CurrentWeek.Value == 0)
+        {
+            State.CurrentWeek.Value = HamsterWoodsContractConstants.StartWeekNum;
         }
 
         return State.CurrentWeek.Value;

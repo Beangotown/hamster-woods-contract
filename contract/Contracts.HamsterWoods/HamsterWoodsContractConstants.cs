@@ -11,4 +11,5 @@ public class HamsterWoodsContractConstants
     public const int DailyPlayCountResetHours = 0;
     public const int BlueGridScore = 1;
     public const int RedGridScore = 5;
+    public const int StartWeekNum = 1;
 }

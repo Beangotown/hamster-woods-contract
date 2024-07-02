@@ -202,6 +202,7 @@ namespace Contracts.HamsterWoods.Tests
             var playerInfo = await HamsterWoodsContractStub.GetPlayerInformation.CallAsync(DefaultAddress);
             playerInfo.LockedAcorns.ShouldBe(sumScore);
             playerInfo.TotalAcorns.ShouldBe(0);
+            playerInfo.SumScores.ShouldBe(sumScore);
             playerInfo.CurGridNum.ShouldBe(sumGridNum);
         }
 
@@ -423,7 +424,7 @@ namespace Contracts.HamsterWoods.Tests
             await PurchaseChanceInit();
             var result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
             {
-                AcornsAmount = 10,
+                AcornsAmount = 25,
                 WeeklyPurchaseCount = 20
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
@@ -438,6 +439,7 @@ namespace Contracts.HamsterWoods.Tests
 
         private async Task PurchaseChanceInit()
         {
+            await SetConfig();
             await TokenContractStub.Issue.SendAsync(new IssueInput
             {
                 Symbol = HamsterWoodsContractConstants.HamsterPassSymbol,

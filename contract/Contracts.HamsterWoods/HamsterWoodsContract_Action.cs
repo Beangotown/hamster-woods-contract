@@ -52,8 +52,12 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
     public override Empty Play(PlayInput input)
     {
         Assert(input.DiceCount <= 3, "Invalid diceCount");
-        Assert(State.RaceConfig.Value !=null, "Invalid raceConfig");
+        Assert(State.RaceConfig.Value != null, "Invalid raceConfig");
+        Assert(CheckHamsterPass(Context.Sender).Value, "HamsterPass Balance is not enough");
         var playerInformation = SetPlayerInfo(input.ResetStart);
+        Assert(playerInformation.PlayableCount > 0 || playerInformation.PurchasedChancesCount > 0,
+            "PlayableCount is not enough");
+
         var boutInformation = new BoutInformation
         {
             PlayId = Context.OriginTransactionId,
@@ -94,7 +98,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             TotalAcorns = playerInformation.TotalAcorns,
             TotalChance = playerInformation.PurchasedChancesCount,
             WeekNum = State.CurrentWeek.Value,
-            IsRace = true//State.RaceConfig.Value.IsRace
+            IsRace = true //State.RaceConfig.Value.IsRace
         });
         return new Empty();
     }
@@ -141,13 +145,15 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
 
     public override Empty PurchaseChance(Int32Value input)
     {
+        Assert(State.RaceConfig.Value != null, "Invalid raceConfig");
+        Assert( State.PurchaseChanceConfig.Value != null, "Invalid purchaseChanceConfig");
         var acornsAmount = State.PurchaseChanceConfig.Value.AcornsAmount;
         Assert(acornsAmount > 0, "PurchaseChance is not allowed");
+
         var playerInformation = SetPlayerInfo(false);
-        ReSetPlayerAcorns(playerInformation);
         Assert(playerInformation.TotalAcorns >= input.Value * acornsAmount, "Acorns is not enough");
         Assert(
-            GetRemainingDailyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) <=
+            GetRemainingDailyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) >=
             input.Value, "Purchase chance is not enough");
 
         playerInformation.TotalAcorns -= input.Value * acornsAmount;
@@ -215,7 +221,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             Symbol = HamsterWoodsContractConstants.AcornSymbol,
             Amount = amount
         });
-        
+
         Context.Fire(new AcornsUnlocked
         {
             From = Context.Self,
