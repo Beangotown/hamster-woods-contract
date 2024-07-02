@@ -10,7 +10,7 @@ import "acs12.proto";
 option csharp_namespace = "Contracts.HamsterWoods";
 
 service HamsterWoodsContract {
-  
+
   option (aelf.csharp_state) = "Contracts.HamsterWoods.HamsterWoodsContractState";
   option (aelf.base) = "acs12.proto";
 
@@ -40,7 +40,7 @@ service HamsterWoodsContract {
 
   rpc SetUnlockManager (aelf.Address) returns (google.protobuf.Empty) {
   }
-  
+
   rpc BatchUnlockAcorns (UnlockAcornsInput) returns (google.protobuf.Empty) {
   }
 
@@ -52,7 +52,7 @@ service HamsterWoodsContract {
 
   rpc SetRaceConfig (RaceConfig) returns (google.protobuf.Empty) {
   }
-  
+
   // Views
   rpc CheckHamsterPass (aelf.Address) returns (google.protobuf.BoolValue) {
     option (aelf.is_view) = true;
@@ -85,7 +85,7 @@ service HamsterWoodsContract {
   rpc GetPurchaseChanceConfig (google.protobuf.Empty) returns (PurchaseChanceConfig) {
     option (aelf.is_view) = true;
   }
-  
+
   rpc GetRaceConfig (google.protobuf.Empty) returns (RaceConfig) {
     option (aelf.is_view) = true;
   }
@@ -107,16 +107,18 @@ message GetBoutInformationInput {
 message PlayerInformation {
   aelf.Address player_address = 1;
   int32 playable_count = 2;
-  google.protobuf.Timestamp last_play_time = 3;
-  int32 cur_grid_num = 4;
-  bool hamster_pass_owned = 5;
-  int64 total_acorns = 6;
-  int64 weekly_acorns = 7;
-  int32 purchased_chances_count = 8;
-  int64 last_bingo_block_height = 9;
-  int64 locked_acorns = 10;
-  google.protobuf.Timestamp last_purchase_chance_time = 11;
-  int32 weekly_purchased_chances_count = 12;
+  int32 daily_playable_count = 3;
+  google.protobuf.Timestamp last_play_time = 4;
+  int32 cur_grid_num = 5;
+  bool hamster_pass_owned = 6;
+  int64 total_acorns = 7;
+  int64 weekly_acorns = 8;
+  int64 locked_acorns = 9;
+  int64 sum_scores = 10;
+  int32 purchased_chances_count = 11;
+  google.protobuf.Timestamp last_purchase_chance_time = 12;
+  int32 weekly_purchased_chances_count = 13;
+  int64 last_bingo_block_height = 14;
 }
 
 
@@ -212,6 +214,7 @@ message Picked {
   int64 total_acorns = 11;
   int32 total_chance = 12;
   bool is_race = 13;
+  int32 week_num = 14;
 }
 
 message AcornsUnlocked {
@@ -222,7 +225,7 @@ message AcornsUnlocked {
   int64 amount = 4;
 }
 
-message PurchasedChance {
+message ChancePurchased {
   option (aelf.is_event) = true;
   aelf.Address player_address = 1;
   int32 acorns_amount = 2;
@@ -253,11 +256,9 @@ message ManagerList {
 
 message RaceConfig {
   google.protobuf.Timestamp begin_time = 1;
-  google.protobuf.Timestamp end_time = 2;
-  int32 start_day_of_week = 3;
-  int32 end_day_of_week = 4;
-  int32 settle_day_of_week = 5;
-  bool is_race = 6;
+  int32 game_hours = 2;
+  bool is_race = 3;
+  google.protobuf.Timestamp calibration_time = 4;
 }
 
 message RaceTimeInfo{

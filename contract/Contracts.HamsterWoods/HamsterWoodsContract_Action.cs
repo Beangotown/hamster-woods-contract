@@ -30,6 +30,12 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         {
             Value = { }
         };
+        State.PurchaseChanceConfig.Value = new PurchaseChanceConfig()
+        {
+            WeeklyPurchaseCount = 20,
+            AcornsAmount = 25,
+            WeeklyPurchaseCountResetHour = 0
+        };
         State.GridTypeList.Value = new GridTypeList
         {
             Value =
@@ -46,6 +52,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
     public override Empty Play(PlayInput input)
     {
         Assert(input.DiceCount <= 3, "Invalid diceCount");
+        Assert(State.RaceConfig.Value !=null, "Invalid raceConfig");
         var playerInformation = SetPlayerInfo(input.ResetStart);
         var boutInformation = new BoutInformation
         {
@@ -86,7 +93,8 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             WeeklyAcorns = playerInformation.WeeklyAcorns,
             TotalAcorns = playerInformation.TotalAcorns,
             TotalChance = playerInformation.PurchasedChancesCount,
-            //IsRace = State.RaceConfig.Value.IsRace
+            WeekNum = State.CurrentWeek.Value,
+            IsRace = true//State.RaceConfig.Value.IsRace
         });
         return new Empty();
     }
@@ -154,7 +162,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             Memo = "PurchaseChance"
         });
 
-        Context.Fire(new PurchasedChance
+        Context.Fire(new ChancePurchased
         {
             PlayerAddress = Context.Sender,
             AcornsAmount = input.Value * acornsAmount,
@@ -207,8 +215,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             Symbol = HamsterWoodsContractConstants.AcornSymbol,
             Amount = amount
         });
-
-        // log event
+        
         Context.Fire(new AcornsUnlocked
         {
             From = Context.Self,

@@ -96,15 +96,14 @@ public partial class HamsterWoodsContract
 
         playerInformation.LastPlayTime = Context.CurrentBlockTime;
         playerInformation.CurGridNum = boutInformation.EndGridNum;
-        if (IsRace())
-        {
-            var currentWeek = State.CurrentWeek.Value;
-            var weeklyAcorns = State.UserWeeklyAcorns[Context.Sender][currentWeek];
-            playerInformation.WeeklyAcorns = weeklyAcorns.Add(boutInformation.Score);
-            State.UserWeeklyAcorns[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
-        }
+
+        var currentWeek = GetWeekNum();
+        var weeklyAcorns = State.UserWeeklyAcorns[Context.Sender][currentWeek];
+        playerInformation.WeeklyAcorns = weeklyAcorns.Add(boutInformation.Score);
+        State.UserWeeklyAcorns[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
 
         playerInformation.LockedAcorns = playerInformation.LockedAcorns.Add(boutInformation.Score);
+        playerInformation.SumScores.Add(boutInformation.Score);
         State.PlayerInformation[boutInformation.PlayerAddress] = playerInformation;
     }
 
@@ -172,6 +171,7 @@ public partial class HamsterWoodsContract
 
         var gameLimitSettings = State.GameLimitSettings.Value;
         playerInformation.PlayableCount = GetPlayableCount(gameLimitSettings, playerInformation, nftEnough);
+        playerInformation.WeeklyPurchasedChancesCount = State.PurchaseChanceConfig.Value.WeeklyPurchaseCount;
         playerInformation.HamsterPassOwned = nftEnough;
         return playerInformation;
     }
@@ -252,71 +252,47 @@ public partial class HamsterWoodsContract
                State.GridTypeList.Value.Value.Count;
     }
 
-    private bool IsRace()
+    private void SetWeekNum(Timestamp beginTime, Timestamp calibrationTime, int gameHours)
     {
-        var rankingRules = State.RankingRules.Value;
-        if (rankingRules == null)
+        if (State.RaceTimeInfo.Value == null)
         {
-            return false;
+            State.RaceTimeInfo.Value = new RaceTimeInfo
+            {
+                BeginTime = beginTime,
+                EndTime = calibrationTime.AddHours(gameHours)
+            };
+            
+            return;
         }
 
-        if (!State.RaceConfig.Value.IsRace)
+        State.RaceTimeInfo.Value.BeginTime = State.RaceConfig.Value.BeginTime;
+        State.RaceTimeInfo.Value.EndTime =
+            State.RaceConfig.Value.CalibrationTime.AddHours(State.RaceConfig.Value.GameHours);
+    }
+
+    private int GetWeekNum()
+    {
+        var raceTimeInfo = State.RaceTimeInfo.Value;
+
+        // can i use while?
+        while (Context.CurrentBlockTime.CompareTo(raceTimeInfo.EndTime) > 0)
         {
-            return false;
+            raceTimeInfo.BeginTime = raceTimeInfo.EndTime;
+            raceTimeInfo.EndTime = raceTimeInfo.EndTime.AddHours(State.RaceConfig.Value.GameHours);
+            State.CurrentWeek.Value.Add(1);
         }
 
+        return State.CurrentWeek.Value;
+    }
+
+    private bool IsBegin()
+    {
         var beginTime = State.RaceConfig.Value.BeginTime;
-        // race not start, first time
         if (Context.CurrentBlockTime.CompareTo(beginTime) < 0)
         {
             return false;
         }
 
-        // 0-6
-        var beginDay = State.RaceConfig.Value.StartDayOfWeek;
-        if (beginDay == 0)
-        {
-            beginDay = 7;
-        }
-
-        var endDay = State.RaceConfig.Value.StartDayOfWeek;
-        if (endDay == 0)
-        {
-            endDay = 7;
-        }
-
-        var days = Math.Abs(endDay - beginDay) + 1;
-
-        //var raceTime = days * 24;
-        var raceEndTime = beginTime.AddDays(days);
-        // beginTime < Context.CurrentBlockTime < raceEndTime
-        if (Context.CurrentBlockTime.CompareTo(raceEndTime) < 0)
-        {
-            return true;
-        }
-
-        // Context.CurrentBlockTime > raceEndTime
-        var settleEndTime = raceEndTime.AddDays(1);
-        if (Context.CurrentBlockTime.CompareTo(settleEndTime) < 0)
-        {
-            return false;
-        }
-
-        // Context.CurrentBlockTime > settleEndTime
-
-        var nextBeginTime = settleEndTime;
-        var nextEndTime = settleEndTime.AddDays(days);
-
-        if (Context.CurrentBlockTime.CompareTo(nextBeginTime) > 0 &&
-            Context.CurrentBlockTime.CompareTo(nextEndTime) < 0)
-        {
-            State.CurrentWeek.Value = State.CurrentWeek.Value + 1;
-            State.RaceTimeInfo.Value.BeginTime = nextBeginTime;
-            State.RaceTimeInfo.Value.EndTime = nextEndTime;
-            
-            return true;
-        }
-
-        return false;
+        return true;
     }
 }

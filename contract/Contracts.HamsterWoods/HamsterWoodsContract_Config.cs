@@ -18,7 +18,7 @@ public partial class HamsterWoodsContract
         State.Admin.Value = newAdmin;
         return new Empty();
     }
-    
+
     public override Empty SetGameLimitSettings(GameLimitSettings input)
     {
         Assert(State.Admin.Value == Context.Sender, "No permission.");
@@ -49,7 +49,7 @@ public partial class HamsterWoodsContract
         State.PurchaseChanceConfig.Value = input;
         return new Empty();
     }
-    
+
     public override Empty SetRankingRules(RankingRules rankingRules)
     {
         Assert(State.Admin.Value == Context.Sender, "No permission.");
@@ -61,17 +61,17 @@ public partial class HamsterWoodsContract
         State.RankingRules.Value = rankingRules;
         return new Empty();
     }
-    
+
     public override Empty SetUnlockManager(Address input)
     {
         Assert(State.Initialized.Value, "Not initialized.");
-        Assert(input != null && !input.Value.IsNullOrEmpty(),"Invalid input.");
+        Assert(input != null && !input.Value.IsNullOrEmpty(), "Invalid input.");
         Assert(State.Admin.Value == Context.Sender, "No permission.");
 
         State.ManagerList.Value.Value.Add(input);
         return new Empty();
     }
-    
+
     public override Empty StartRace(Empty input)
     {
         Assert(State.Initialized.Value, "Not initialized.");
@@ -81,10 +81,10 @@ public partial class HamsterWoodsContract
         {
             State.CurrentWeek.Value = 1;
         }
-       
+
         return new Empty();
     }
-    
+
     public override Empty StopRace(Empty input)
     {
         Assert(State.Initialized.Value, "Not initialized.");
@@ -92,13 +92,14 @@ public partial class HamsterWoodsContract
         State.RaceConfig.Value.IsRace = false;
         return new Empty();
     }
-    
+
     public override Empty SetRaceConfig(RaceConfig input)
     {
         Assert(State.Initialized.Value, "Not initialized.");
         Assert(State.Admin.Value == Context.Sender, "No permission.");
 
         State.RaceConfig.Value = input;
+        SetWeekNum(input.BeginTime, input.CalibrationTime, input.GameHours);
         return new Empty();
     }
 }
