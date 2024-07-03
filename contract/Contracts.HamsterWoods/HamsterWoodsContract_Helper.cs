@@ -29,7 +29,7 @@ public partial class HamsterWoodsContract
         var acornBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
             Owner = Context.Sender,
-            Symbol = HamsterWoodsContractConstants.AcornSymbol
+            Symbol = HamsterWoodsContractConstants.AcornsSymbol
         }).Balance;
         playerInformation.TotalAcorns = acornBalance;
     }
@@ -47,14 +47,17 @@ public partial class HamsterWoodsContract
         }
 
         playerInformation.LastPlayTime = Context.CurrentBlockTime;
+        playerInformation.LastBingoBlockHeight = Context.CurrentHeight;
         playerInformation.CurGridNum = boutInformation.EndGridNum;
 
         var currentWeek = GetWeekNum();
         var weeklyAcorns = State.UserWeeklyAcorns[Context.Sender][currentWeek];
-        playerInformation.WeeklyAcorns = weeklyAcorns.Add(boutInformation.Score);
+        var acornsAmount = boutInformation.Score * HamsterWoodsContractConstants.AcornsDecimalsValue;
+
+        playerInformation.WeeklyAcorns = weeklyAcorns.Add(acornsAmount);
         State.UserWeeklyAcorns[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
 
-        playerInformation.LockedAcorns = playerInformation.LockedAcorns.Add(boutInformation.Score);
+        playerInformation.LockedAcorns = playerInformation.LockedAcorns.Add(acornsAmount);
         playerInformation.SumScores = playerInformation.SumScores.Add(boutInformation.Score);
         State.PlayerInformation[boutInformation.PlayerAddress] = playerInformation;
     }
@@ -117,13 +120,20 @@ public partial class HamsterWoodsContract
             playerInformation = new PlayerInformation
             {
                 PlayerAddress = playerAddress,
-                CurGridNum = 0
+                CurGridNum = 0,
+                AcornsDecimals = HamsterWoodsContractConstants.AcornsDecimals,
+                DailyPlayableCount = State.GameLimitSettings.Value.DailyMaxPlayCount,
+                WeeklyPurchasedChancesCount = State.PurchaseChanceConfig.Value.WeeklyPurchaseCount
             };
         }
 
+        // need to remove.
+        playerInformation.AcornsDecimals = HamsterWoodsContractConstants.AcornsDecimals;
+        playerInformation.DailyPlayableCount = HamsterWoodsContractConstants.DailyMaxPlayCount;
+        playerInformation.WeeklyPurchasedChancesCount = State.PurchaseChanceConfig.Value.WeeklyPurchaseCount;
+
         var gameLimitSettings = State.GameLimitSettings.Value;
         playerInformation.PlayableCount = GetPlayableCount(gameLimitSettings, playerInformation, nftEnough);
-        playerInformation.WeeklyPurchasedChancesCount = State.PurchaseChanceConfig.Value.WeeklyPurchaseCount;
         playerInformation.HamsterPassOwned = nftEnough;
         return playerInformation;
     }
@@ -161,7 +171,7 @@ public partial class HamsterWoodsContract
             return 0;
         }
 
-        return playerInformation.WeeklyPurchasedChancesCount;
+        return playerInformation.PurchasedChancesCount;
     }
 
     private Int32 GetRemainingWeeklyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
@@ -204,12 +214,17 @@ public partial class HamsterWoodsContract
                 EndTime = calibrationTime.AddHours(gameHours)
             };
 
+            State.RaceTimeInfo.Value.SettleBeginTime = State.RaceTimeInfo.Value.EndTime;
+            State.RaceTimeInfo.Value.SettleEndTime = State.RaceTimeInfo.Value.EndTime.AddDays(1);
+
             return;
         }
 
         State.RaceTimeInfo.Value.BeginTime = State.RaceConfig.Value.BeginTime;
         State.RaceTimeInfo.Value.EndTime =
             State.RaceConfig.Value.CalibrationTime.AddHours(State.RaceConfig.Value.GameHours);
+        State.RaceTimeInfo.Value.SettleBeginTime = State.RaceTimeInfo.Value.EndTime;
+        State.RaceTimeInfo.Value.SettleEndTime = State.RaceTimeInfo.Value.EndTime.AddDays(1);
     }
 
     private int GetWeekNum()
@@ -219,6 +234,10 @@ public partial class HamsterWoodsContract
         {
             raceTimeInfo.BeginTime = raceTimeInfo.EndTime;
             raceTimeInfo.EndTime = raceTimeInfo.EndTime.AddHours(State.RaceConfig.Value.GameHours);
+            raceTimeInfo.SettleBeginTime = raceTimeInfo.EndTime;
+            raceTimeInfo.SettleEndTime = raceTimeInfo.EndTime.AddDays(1);
+
+            State.RaceTimeInfo.Value = raceTimeInfo;
             State.CurrentWeek.Value.Add(1);
         }
 

@@ -21,7 +21,7 @@ public partial class HamsterWoodsContractState : ContractState
     // PlayId => BoutInformation
     public MappedState<Hash, BoutInformation> BoutInformation { get; set; }
 
-    public MappedState<Address, int, int> UserWeeklyAcorns { get; set; }
+    public MappedState<Address, int, long> UserWeeklyAcorns { get; set; }
 
     public SingletonState<int> CurrentWeek { get; set; }
 

@@ -170,7 +170,7 @@ namespace Contracts.HamsterWoods.Tests
             });
             await TokenContractStub.Issue.SendAsync(new IssueInput
             {
-                Symbol = HamsterWoodsContractConstants.AcornSymbol,
+                Symbol = HamsterWoodsContractConstants.AcornsSymbol,
                 Amount = 100000000000000,
                 Memo = "Issue",
                 To = DAppContractAddress
@@ -424,7 +424,7 @@ namespace Contracts.HamsterWoods.Tests
             await PurchaseChanceInit();
             var result = await HamsterWoodsContractStub.SetPurchaseChanceConfig.SendAsync(new PurchaseChanceConfig
             {
-                AcornsAmount = 25,
+                AcornsAmount = 2500000000,
                 WeeklyPurchaseCount = 20
             });
             result.TransactionResult.Status.ShouldBe(TransactionResultStatus.Mined);
@@ -449,7 +449,7 @@ namespace Contracts.HamsterWoods.Tests
             });
             await TokenContractStub.Issue.SendAsync(new IssueInput
             {
-                Symbol = HamsterWoodsContractConstants.AcornSymbol,
+                Symbol = HamsterWoodsContractConstants.AcornsSymbol,
                 Amount = 100000000000000,
                 Memo = "Issue",
                 To = DefaultAddress
@@ -457,7 +457,7 @@ namespace Contracts.HamsterWoods.Tests
 
             await TokenContractStub.Approve.SendAsync(new ApproveInput()
             {
-                Symbol = HamsterWoodsContractConstants.AcornSymbol,
+                Symbol = HamsterWoodsContractConstants.AcornsSymbol,
                 Amount = 1000000000000,
                 Spender = DAppContractAddress,
             });

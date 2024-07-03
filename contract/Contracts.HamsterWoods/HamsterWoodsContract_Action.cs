@@ -1,6 +1,8 @@
+using System;
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
+using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
@@ -73,8 +75,6 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             "Still preparing your game result, please wait for a while :)");
         SetBoutInformationBingoInfo(boutInformation.PlayId, randomHash, playerInformation, boutInformation);
         SetPlayerInformation(playerInformation, boutInformation);
-
-        // not include race. and settle end time not set
         SetLockedAcornsInfo(Context.Sender, boutInformation.Score);
 
         Context.Fire(new Picked
@@ -98,7 +98,8 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             TotalAcorns = playerInformation.TotalAcorns,
             TotalChance = playerInformation.PurchasedChancesCount,
             WeekNum = State.CurrentWeek.Value,
-            IsRace = true //State.RaceConfig.Value.IsRace
+            IsRace = State.RaceConfig.Value.IsRace,
+            AcornsDecimals = HamsterWoodsContractConstants.AcornsDecimals
         });
         return new Empty();
     }
@@ -117,7 +118,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
                     {
                         Acorns = score,
                         Week = weekNum,
-                        //SettleTime = State.RaceTimeInfo.Value.SettleEndTime,  //Value is null
+                        SettleTime = State.RaceTimeInfo.Value.SettleBeginTime.AddDays(HamsterWoodsContractConstants.LockedDays),
                         IsUnlocked = false
                     }
                 }
@@ -133,7 +134,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             {
                 Acorns = score,
                 Week = weekNum,
-                SettleTime = State.RaceTimeInfo.Value.SettleEndTime,
+                SettleTime = State.RaceTimeInfo.Value.SettleBeginTime.AddDays(HamsterWoodsContractConstants.LockedDays),
                 IsUnlocked = false
             });
         }
@@ -151,12 +152,13 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         Assert(acornsAmount > 0, "PurchaseChance is not allowed");
 
         var playerInformation = SetPlayerInfo(false);
-        Assert(playerInformation.TotalAcorns >= input.Value * acornsAmount, "Acorns is not enough");
+        var costAmount = input.Value * acornsAmount;;
+        Assert(playerInformation.TotalAcorns >= costAmount, "Acorns is not enough");
         Assert(
             GetRemainingWeeklyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) >=
             input.Value, "Purchase chance is not enough");
 
-        playerInformation.TotalAcorns -= input.Value * acornsAmount;
+        playerInformation.TotalAcorns -= costAmount;
         playerInformation.PurchasedChancesCount += input.Value;
         playerInformation.LastPurchaseChanceTime = Context.CurrentBlockTime;
         State.PlayerInformation[Context.Sender] = playerInformation;
@@ -166,14 +168,14 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             From = Context.Sender,
             To = Context.Self,
             Amount = input.Value * acornsAmount,
-            Symbol = HamsterWoodsContractConstants.AcornSymbol,
+            Symbol = HamsterWoodsContractConstants.AcornsSymbol,
             Memo = "PurchaseChance"
         });
 
         Context.Fire(new ChancePurchased
         {
             PlayerAddress = Context.Sender,
-            AcornsAmount = input.Value * acornsAmount,
+            AcornsAmount = costAmount,
             ChanceCount = input.Value,
             WeeklyAcorns = playerInformation.WeeklyAcorns,
             TotalAcorns = playerInformation.TotalAcorns,
@@ -220,7 +222,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         State.TokenContract.Transfer.Send(new TransferInput
         {
             To = input,
-            Symbol = HamsterWoodsContractConstants.AcornSymbol,
+            Symbol = HamsterWoodsContractConstants.AcornsSymbol,
             Amount = amount
         });
 
@@ -228,7 +230,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         {
             From = Context.Self,
             To = input,
-            Symbol = HamsterWoodsContractConstants.AcornSymbol,
+            Symbol = HamsterWoodsContractConstants.AcornsSymbol,
             Amount = amount
         });
     }
