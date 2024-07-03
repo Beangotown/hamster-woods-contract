@@ -148,13 +148,15 @@ public partial class HamsterWoodsContract
             return gameLimitSettings.DailyMaxPlayCount;
         }
 
-        return playerInformation.PlayableCount + 100;
+        return playerInformation.PlayableCount;
     }
 
     private Int32 GeWeeklyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
         PlayerInformation playerInformation)
     {
-        if (Context.CurrentBlockTime.CompareTo(State.RaceTimeInfo.Value.BeginTime) > 0)
+        GetWeekNum();
+        if (playerInformation.LastPurchaseChanceTime == null ||
+            playerInformation.LastPurchaseChanceTime.CompareTo(State.RaceTimeInfo.Value.BeginTime) < 0)
         {
             return 0;
         }
@@ -162,7 +164,7 @@ public partial class HamsterWoodsContract
         return playerInformation.WeeklyPurchasedChancesCount;
     }
 
-    private Int32 GetRemainingDailyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
+    private Int32 GetRemainingWeeklyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
         PlayerInformation playerInformation)
     {
         var purchasedCount = GeWeeklyPurchasedChanceCount(purchaseChanceConfig, playerInformation);
@@ -204,7 +206,7 @@ public partial class HamsterWoodsContract
 
             return;
         }
-        
+
         State.RaceTimeInfo.Value.BeginTime = State.RaceConfig.Value.BeginTime;
         State.RaceTimeInfo.Value.EndTime =
             State.RaceConfig.Value.CalibrationTime.AddHours(State.RaceConfig.Value.GameHours);
