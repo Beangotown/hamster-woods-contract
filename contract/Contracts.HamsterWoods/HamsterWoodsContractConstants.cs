@@ -2,10 +2,8 @@ namespace Contracts.HamsterWoods;
 
 public class HamsterWoodsContractConstants
 {
-    //public const string HamsterPassSymbol = "HAMSTERPASS-1";
-    public const string HamsterPassSymbol = "TTZZ-1";
-    public const string AcornsSymbol = "TSCRIPT";
-    //public const string AcornSymbol = "ACORNS";
+    public const string HamsterPassSymbol = "HAMSTERPASS-1";
+    public const string AcornsSymbol = "ACORNS";
 
     public const int AcornsDecimals = 8;
     public const long AcornsDecimalsValue = 1_0000_0000;
