@@ -127,11 +127,6 @@ public partial class HamsterWoodsContract
             };
         }
 
-        // need to remove.
-        playerInformation.AcornsDecimals = HamsterWoodsContractConstants.AcornsDecimals;
-        playerInformation.DailyPlayableCount = HamsterWoodsContractConstants.DailyMaxPlayCount;
-        playerInformation.WeeklyPurchasedChancesCount = State.PurchaseChanceConfig.Value.WeeklyPurchaseCount;
-
         var gameLimitSettings = State.GameLimitSettings.Value;
         playerInformation.PlayableCount = GetPlayableCount(gameLimitSettings, playerInformation, nftEnough);
         playerInformation.HamsterPassOwned = nftEnough;

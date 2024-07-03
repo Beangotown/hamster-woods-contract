@@ -75,13 +75,14 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             "Still preparing your game result, please wait for a while :)");
         SetBoutInformationBingoInfo(boutInformation.PlayId, randomHash, playerInformation, boutInformation);
         SetPlayerInformation(playerInformation, boutInformation);
-        SetLockedAcornsInfo(Context.Sender, boutInformation.Score);
-
+        
+        var score = boutInformation.Score * HamsterWoodsContractConstants.AcornsDecimalsValue;
+        SetLockedAcornsInfo(Context.Sender, score);
         Context.Fire(new Picked
         {
             GridType = boutInformation.GridType,
             GridNum = boutInformation.GridNum,
-            Score = boutInformation.Score,
+            Score = score,
             PlayerAddress = boutInformation.PlayerAddress,
             BingoBlockHeight = boutInformation.BingoBlockHeight,
             DiceCount = boutInformation.DiceCount,
@@ -104,7 +105,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         return new Empty();
     }
 
-    private void SetLockedAcornsInfo(Address address, int score)
+    private void SetLockedAcornsInfo(Address address, long score)
     {
         var lockedAcornsInfoList = State.LockedAcornsInfoList[address];
         var weekNum = State.CurrentWeek.Value;
