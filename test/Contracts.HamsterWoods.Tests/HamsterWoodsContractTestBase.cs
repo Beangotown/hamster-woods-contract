@@ -36,7 +36,7 @@ namespace Contracts.HamsterWoods.Tests
             AsyncHelper.RunSync(() => CreateSeedNftCollection(TokenContractStub));
             AsyncHelper.RunSync(() => CreateNftCollectionAsync(TokenContractStub,new CreateInput
             {
-                Symbol = "TTZZ-0",
+                Symbol = "HAMSTERPASS-0",
                 TokenName = "HamsterPassSymbol collection",
                 TotalSupply = 10,
                 Decimals = 0,

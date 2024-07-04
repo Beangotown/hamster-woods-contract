@@ -55,7 +55,7 @@ public partial class HamsterWoodsContract
         var acornsAmount = boutInformation.Score * HamsterWoodsContractConstants.AcornsDecimalsValue;
 
         playerInformation.WeeklyAcorns = weeklyAcorns.Add(acornsAmount);
-        State.UserWeeklyAcorns[Context.Sender][currentWeek] = (int)playerInformation.WeeklyAcorns;
+        State.UserWeeklyAcorns[Context.Sender][currentWeek] = playerInformation.WeeklyAcorns;
 
         playerInformation.LockedAcorns = playerInformation.LockedAcorns.Add(acornsAmount);
         playerInformation.SumScores = playerInformation.SumScores.Add(boutInformation.Score);
