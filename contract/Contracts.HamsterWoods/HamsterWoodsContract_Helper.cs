@@ -20,18 +20,17 @@ public partial class HamsterWoodsContract
             playerInformation.CurGridNum = 0;
         }
 
-        ReSetPlayerAcorns(playerInformation);
+        playerInformation.TotalAcorns = GetAcornsBalance(Context.Sender);
         return playerInformation;
     }
 
-    private void ReSetPlayerAcorns(PlayerInformation playerInformation)
+    private long GetAcornsBalance(Address owner)
     {
-        var acornBalance = State.TokenContract.GetBalance.Call(new GetBalanceInput
+        return State.TokenContract.GetBalance.Call(new GetBalanceInput
         {
-            Owner = Context.Sender,
+            Owner = owner,
             Symbol = HamsterWoodsContractConstants.AcornsSymbol
         }).Balance;
-        playerInformation.TotalAcorns = acornBalance;
     }
 
 
@@ -129,6 +128,7 @@ public partial class HamsterWoodsContract
 
         var gameLimitSettings = State.GameLimitSettings.Value;
         playerInformation.PlayableCount = GetPlayableCount(gameLimitSettings, playerInformation, nftEnough);
+        playerInformation.TotalAcorns = GetAcornsBalance(playerAddress);
         playerInformation.HamsterPassOwned = nftEnough;
         return playerInformation;
     }
