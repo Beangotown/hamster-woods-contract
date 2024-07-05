@@ -64,4 +64,9 @@ public partial class HamsterWoodsContract
     {
         return State.RaceConfig.Value;
     }
+
+    public override LockedAcornsInfoList GetLockedAcornsInfoList(Address owner)
+    {
+        return State.LockedAcornsInfoList[owner];
+    }
 }

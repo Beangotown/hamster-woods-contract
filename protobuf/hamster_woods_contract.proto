@@ -90,6 +90,10 @@ service HamsterWoodsContract {
     option (aelf.is_view) = true;
   }
 
+  rpc GetLockedAcornsInfoList (aelf.Address) returns (LockedAcornsInfoList) {
+    option (aelf.is_view) = true;
+  }
+
 }
 
 message PlayInput {
@@ -120,6 +124,7 @@ message PlayerInformation {
   int32 weekly_purchased_chances_count = 13;
   int64 last_bingo_block_height = 14;
   int32 acorns_decimals = 15;
+  int32 week_num = 16;
 }
 
 
@@ -245,7 +250,8 @@ message LockedAcornsInfo {
   int32 week = 1;
   int64 acorns = 2;
   google.protobuf.Timestamp settle_time = 3;
-  bool is_unlocked = 4;
+  bool is_add_locked_acorns = 5;
+  bool is_unlocked = 6;
 }
 
 message UnlockAcornsInput {

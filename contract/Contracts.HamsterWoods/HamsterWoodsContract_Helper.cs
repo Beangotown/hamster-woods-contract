@@ -20,7 +20,6 @@ public partial class HamsterWoodsContract
             playerInformation.CurGridNum = 0;
         }
 
-        playerInformation.TotalAcorns = GetAcornsBalance(Context.Sender);
         return playerInformation;
     }
 
@@ -49,14 +48,12 @@ public partial class HamsterWoodsContract
         playerInformation.LastBingoBlockHeight = Context.CurrentHeight;
         playerInformation.CurGridNum = boutInformation.EndGridNum;
 
-        var currentWeek = GetWeekNum();
+        var currentWeek = State.CurrentWeek.Value;
         var weeklyAcorns = State.UserWeeklyAcorns[Context.Sender][currentWeek];
         var acornsAmount = boutInformation.Score * HamsterWoodsContractConstants.AcornsDecimalsValue;
 
         playerInformation.WeeklyAcorns = weeklyAcorns.Add(acornsAmount);
         State.UserWeeklyAcorns[Context.Sender][currentWeek] = playerInformation.WeeklyAcorns;
-
-        playerInformation.LockedAcorns = playerInformation.LockedAcorns.Add(acornsAmount);
         playerInformation.SumScores = playerInformation.SumScores.Add(boutInformation.Score);
         State.PlayerInformation[boutInformation.PlayerAddress] = playerInformation;
     }
@@ -127,8 +124,10 @@ public partial class HamsterWoodsContract
         }
 
         var gameLimitSettings = State.GameLimitSettings.Value;
+        playerInformation.WeekNum = GetWeekNum();
         playerInformation.PlayableCount = GetPlayableCount(gameLimitSettings, playerInformation, nftEnough);
         playerInformation.TotalAcorns = GetAcornsBalance(playerAddress);
+        playerInformation.LockedAcorns = GetLockedAcorns(playerInformation);
         playerInformation.HamsterPassOwned = nftEnough;
         return playerInformation;
     }
@@ -159,7 +158,6 @@ public partial class HamsterWoodsContract
     private Int32 GeWeeklyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
         PlayerInformation playerInformation)
     {
-        GetWeekNum();
         if (playerInformation.LastPurchaseChanceTime == null ||
             playerInformation.LastPurchaseChanceTime.CompareTo(State.RaceTimeInfo.Value.BeginTime) < 0)
         {
@@ -235,6 +233,33 @@ public partial class HamsterWoodsContract
         }
 
         return State.CurrentWeek.Value;
+    }
+
+    // need call GetWeekNum() when use this method
+    private long GetLockedAcorns(PlayerInformation playerInformation)
+    {
+        var lockedAcorns = playerInformation.LockedAcorns;
+        var lockedAcornsInfoList = State.LockedAcornsInfoList[playerInformation.PlayerAddress];
+        if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null || lockedAcornsInfoList.Value.Count == 0)
+        {
+            return lockedAcorns;
+        }
+
+        var needAddList = lockedAcornsInfoList.Value.Where(t =>
+            !t.IsAddLockedAcorns && !t.IsUnlocked && (Context.CurrentBlockTime.CompareTo(t.SettleTime) > 0)).ToList();
+
+        if (needAddList.Count == 0)
+        {
+            return lockedAcorns;
+        }
+
+        var needAddAmount = needAddList.Sum(f => f.Acorns);
+        foreach (var item in needAddList)
+        {
+            item.IsAddLockedAcorns = true;
+        }
+
+        return lockedAcorns + needAddAmount;
     }
 
     private bool IsBegin()

@@ -1,7 +1,6 @@
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
-using AElf.CSharp.Core.Extension;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
@@ -74,7 +73,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             "Still preparing your game result, please wait for a while :)");
         SetBoutInformationBingoInfo(boutInformation.PlayId, randomHash, playerInformation, boutInformation);
         SetPlayerInformation(playerInformation, boutInformation);
-        
+
         var score = boutInformation.Score * HamsterWoodsContractConstants.AcornsDecimalsValue;
         SetLockedAcornsInfo(Context.Sender, score);
         Context.Fire(new Picked
@@ -107,36 +106,23 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
     private void SetLockedAcornsInfo(Address address, long score)
     {
         var lockedAcornsInfoList = State.LockedAcornsInfoList[address];
-        var weekNum = State.CurrentWeek.Value;
         if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null || lockedAcornsInfoList.Value.Count == 0)
         {
             State.LockedAcornsInfoList[address] = new LockedAcornsInfoList
             {
                 Value =
                 {
-                    new LockedAcornsInfo
-                    {
-                        Acorns = score,
-                        Week = weekNum,
-                        SettleTime = State.RaceTimeInfo.Value.SettleBeginTime.AddDays(HamsterWoodsContractConstants.LockedDays),
-                        IsUnlocked = false
-                    }
+                    CreateLockedAcornsInfo(score)
                 }
             };
 
             return;
         }
 
-        var lockedInfo = lockedAcornsInfoList.Value.FirstOrDefault(t => t.Week == weekNum);
+        var lockedInfo = lockedAcornsInfoList.Value.FirstOrDefault(t => t.Week ==  State.CurrentWeek.Value);
         if (lockedInfo == null)
         {
-            lockedAcornsInfoList.Value.Add(new LockedAcornsInfo()
-            {
-                Acorns = score,
-                Week = weekNum,
-                SettleTime = State.RaceTimeInfo.Value.SettleBeginTime.AddDays(HamsterWoodsContractConstants.LockedDays),
-                IsUnlocked = false
-            });
+            lockedAcornsInfoList.Value.Add(CreateLockedAcornsInfo(score));
         }
         else
         {
@@ -144,15 +130,28 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         }
     }
 
+    private LockedAcornsInfo CreateLockedAcornsInfo(long score)
+    {
+        return new LockedAcornsInfo
+        {
+            Acorns = score,
+            Week = State.CurrentWeek.Value,
+            SettleTime = State.RaceTimeInfo.Value.SettleBeginTime,
+            IsAddLockedAcorns = false,
+            IsUnlocked = false
+        };
+    }
+
     public override Empty PurchaseChance(Int32Value input)
     {
         Assert(State.RaceConfig.Value != null, "Invalid raceConfig");
-        Assert( State.PurchaseChanceConfig.Value != null, "Invalid purchaseChanceConfig");
+        Assert(State.PurchaseChanceConfig.Value != null, "Invalid purchaseChanceConfig");
         var acornsAmount = State.PurchaseChanceConfig.Value.AcornsAmount;
         Assert(acornsAmount > 0, "PurchaseChance is not allowed");
 
         var playerInformation = SetPlayerInfo(false);
-        var costAmount = input.Value * acornsAmount;;
+        var costAmount = input.Value * acornsAmount;
+        ;
         Assert(playerInformation.TotalAcorns >= costAmount, "Acorns is not enough");
         Assert(
             GeWeeklyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) >=
@@ -163,7 +162,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         playerInformation.WeeklyPurchasedChancesCount -= input.Value;
         playerInformation.LastPurchaseChanceTime = Context.CurrentBlockTime;
         State.PlayerInformation[Context.Sender] = playerInformation;
-        
+
         State.TokenContract.TransferFrom.Send(new TransferFromInput
         {
             From = Context.Sender,
