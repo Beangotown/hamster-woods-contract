@@ -126,8 +126,11 @@ public partial class HamsterWoodsContract
         var gameLimitSettings = State.GameLimitSettings.Value;
         playerInformation.WeekNum = GetWeekNum();
         playerInformation.PlayableCount = GetPlayableCount(gameLimitSettings, playerInformation, nftEnough);
+        playerInformation.WeeklyPurchasedChancesCount =
+            GeWeeklyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation);
         playerInformation.TotalAcorns = GetAcornsBalance(playerAddress);
         playerInformation.LockedAcorns = GetLockedAcorns(playerInformation);
+        playerInformation.WeeklyAcorns = State.UserWeeklyAcorns[playerAddress][State.CurrentWeek.Value];
         playerInformation.HamsterPassOwned = nftEnough;
         return playerInformation;
     }

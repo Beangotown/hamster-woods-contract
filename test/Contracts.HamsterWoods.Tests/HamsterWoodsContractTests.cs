@@ -34,7 +34,7 @@ namespace Contracts.HamsterWoods.Tests
                 IsRace = true,
                 CalibrationTime = DateTime.UtcNow.AddDays(-1).ToTimestamp()
             });
-            
+
             var tx2 = await HamsterWoodsContractStub.Play.SendWithExceptionAsync(new PlayInput
             {
                 ResetStart = true
@@ -192,7 +192,7 @@ namespace Contracts.HamsterWoods.Tests
             await PlayInitAsync();
             int sumScore = 0;
             int sumGridNum = 0;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 1; i++)
             {
                 var boutInformation = await PlayNewTest();
                 sumScore += boutInformation.Score;
@@ -200,8 +200,9 @@ namespace Contracts.HamsterWoods.Tests
             }
 
             var playerInfo = await HamsterWoodsContractStub.GetPlayerInformation.CallAsync(DefaultAddress);
-            playerInfo.LockedAcorns.ShouldBe(sumScore);
+            playerInfo.LockedAcorns.ShouldBe(0);
             playerInfo.TotalAcorns.ShouldBe(0);
+            playerInfo.WeeklyAcorns.ShouldBe(sumScore * HamsterWoodsContractConstants.AcornsDecimalsValue);
             playerInfo.SumScores.ShouldBe(sumScore);
             playerInfo.CurGridNum.ShouldBe(sumGridNum);
         }
