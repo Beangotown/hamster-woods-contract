@@ -163,17 +163,10 @@ public partial class HamsterWoodsContract
         if (playerInformation.LastPurchaseChanceTime == null ||
             playerInformation.LastPurchaseChanceTime.CompareTo(State.RaceTimeInfo.Value.BeginTime) < 0)
         {
-            return 0;
+            playerInformation.WeeklyPurchasedChancesCount = State.PurchaseChanceConfig.Value.WeeklyPurchaseCount;
         }
 
-        return playerInformation.PurchasedChancesCount;
-    }
-
-    private Int32 GetRemainingWeeklyPurchasedChanceCount(PurchaseChanceConfig purchaseChanceConfig,
-        PlayerInformation playerInformation)
-    {
-        var purchasedCount = GeWeeklyPurchasedChanceCount(purchaseChanceConfig, playerInformation);
-        return purchaseChanceConfig.WeeklyPurchaseCount - purchasedCount;
+        return playerInformation.WeeklyPurchasedChancesCount;
     }
 
     private List<int> GetDices(Hash hashValue, int diceCount)
@@ -233,7 +226,7 @@ public partial class HamsterWoodsContract
             raceTimeInfo.SettleEndTime = raceTimeInfo.EndTime.AddDays(1);
 
             State.RaceTimeInfo.Value = raceTimeInfo;
-            State.CurrentWeek.Value.Add(1);
+            State.CurrentWeek.Value = State.CurrentWeek.Value.Add(1);
         }
 
         if (State.CurrentWeek.Value == 0)

@@ -156,11 +156,12 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         var costAmount = input.Value * acornsAmount;;
         Assert(playerInformation.TotalAcorns >= costAmount, "Acorns is not enough");
         Assert(
-            GetRemainingWeeklyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) >=
+            GeWeeklyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) >=
             input.Value, "Purchase chance is not enough");
 
         playerInformation.TotalAcorns -= costAmount;
         playerInformation.PurchasedChancesCount += input.Value;
+        playerInformation.WeeklyPurchasedChancesCount -= input.Value;
         playerInformation.LastPurchaseChanceTime = Context.CurrentBlockTime;
         State.PlayerInformation[Context.Sender] = playerInformation;
         
