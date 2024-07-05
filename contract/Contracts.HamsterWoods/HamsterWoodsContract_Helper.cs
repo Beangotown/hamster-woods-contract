@@ -240,11 +240,6 @@ public partial class HamsterWoodsContract
     private bool IsBegin()
     {
         var beginTime = State.RaceConfig.Value.BeginTime;
-        if (Context.CurrentBlockTime.CompareTo(beginTime) < 0)
-        {
-            return false;
-        }
-
-        return true;
+        return Context.CurrentBlockTime.CompareTo(beginTime) >= 0;
     }
 }
