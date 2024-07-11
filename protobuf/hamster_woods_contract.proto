@@ -94,6 +94,10 @@ service HamsterWoodsContract {
     option (aelf.is_view) = true;
   }
 
+  rpc GetCurrentRaceInfo (google.protobuf.Empty) returns (CurrentRaceInfo) {
+    option (aelf.is_view) = true;
+  }
+
 }
 
 message PlayInput {
@@ -230,6 +234,7 @@ message AcornsUnlocked {
   aelf.Address to = 2;
   string symbol = 3;
   int64 amount = 4;
+  int32 week_num = 5;
 }
 
 message ChancePurchased {
@@ -255,7 +260,8 @@ message LockedAcornsInfo {
 }
 
 message UnlockAcornsInput {
-  repeated aelf.Address value = 1;
+  repeated aelf.Address addresses = 1;
+  int32 week_num = 2;
 }
 
 message ManagerList {
@@ -274,4 +280,9 @@ message RaceTimeInfo{
   google.protobuf.Timestamp end_time = 2;
   google.protobuf.Timestamp settle_begin_time = 3;
   google.protobuf.Timestamp settle_end_time = 4;
+}
+
+message CurrentRaceInfo{
+  RaceTimeInfo race_time_info = 1;
+  int32 week_num = 2;
 }

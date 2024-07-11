@@ -69,4 +69,13 @@ public partial class HamsterWoodsContract
     {
         return State.LockedAcornsInfoList[owner];
     }
+
+    public override CurrentRaceInfo GetCurrentRaceInfo(Empty input)
+    {
+        return new CurrentRaceInfo
+        {
+            RaceTimeInfo = State.RaceTimeInfo.Value,
+            WeekNum = State.CurrentWeek.Value
+        };
+    }
 }

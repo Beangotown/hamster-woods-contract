@@ -119,7 +119,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             return;
         }
 
-        var lockedInfo = lockedAcornsInfoList.Value.FirstOrDefault(t => t.Week ==  State.CurrentWeek.Value);
+        var lockedInfo = lockedAcornsInfoList.Value.FirstOrDefault(t => t.Week == State.CurrentWeek.Value);
         if (lockedInfo == null)
         {
             lockedAcornsInfoList.Value.Add(CreateLockedAcornsInfo(score));
@@ -187,36 +187,38 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
     public override Empty BatchUnlockAcorns(UnlockAcornsInput input)
     {
         Assert(State.ManagerList.Value.Value.Contains(Context.Sender), "No permission.");
-        Assert(input.Value.Count > 0 && input.Value.Count < 20, "Invalid input.");
+        Assert(input.Addresses.Count > 0 && input.Addresses.Count < 20, "Invalid addresses.");
+        Assert(input.WeekNum > 0 && input.WeekNum < State.CurrentWeek.Value, "Invalid weekNum.");
 
-        foreach (var address in input.Value)
+        foreach (var address in input.Addresses)
         {
-            UnlockAcorns(address);
+            UnlockAcorns(address, input.WeekNum);
         }
 
         return new Empty();
     }
 
-    // send locked money
-    private void UnlockAcorns(Address input)
+    private void UnlockAcorns(Address input, int weekNum)
     {
         var lockedAcornsInfoList = State.LockedAcornsInfoList[input];
-        if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null)
+        if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null || lockedAcornsInfoList.Value.Count == 0)
         {
             return;
         }
 
-        // time judge
-        var needUnlockInfoList = lockedAcornsInfoList.Value.Where(t => !t.IsUnlocked).ToList();
-        if (needUnlockInfoList.Count == 0)
+        var needUnlockInfo = lockedAcornsInfoList.Value.FirstOrDefault(t => t.Week == weekNum && !t.IsUnlocked);
+        if (needUnlockInfo == null)
         {
             return;
         }
 
-        var amount = needUnlockInfoList.Sum(t => t.Acorns);
-        foreach (var item in needUnlockInfoList)
+        needUnlockInfo.IsUnlocked = true;
+        var amount = needUnlockInfo.Acorns;
+        var playerInformation = State.PlayerInformation[input];
+        if (playerInformation != null)
         {
-            item.IsUnlocked = true;
+            playerInformation.LockedAcorns -= amount;
+            State.PlayerInformation[input] = playerInformation;
         }
 
         State.TokenContract.Transfer.Send(new TransferInput
@@ -231,7 +233,8 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             From = Context.Self,
             To = input,
             Symbol = HamsterWoodsContractConstants.AcornsSymbol,
-            Amount = amount
+            Amount = amount,
+            WeekNum = needUnlockInfo.Week
         });
     }
 }
