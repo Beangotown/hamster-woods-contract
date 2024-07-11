@@ -72,10 +72,6 @@ public partial class HamsterWoodsContract
 
     public override CurrentRaceInfo GetCurrentRaceInfo(Empty input)
     {
-        return new CurrentRaceInfo
-        {
-            RaceTimeInfo = State.RaceTimeInfo.Value,
-            WeekNum = State.CurrentWeek.Value
-        };
+        return GetWeekNumAndRaceInfo();
     }
 }

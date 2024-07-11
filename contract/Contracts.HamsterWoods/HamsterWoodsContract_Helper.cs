@@ -238,6 +238,32 @@ public partial class HamsterWoodsContract
         return State.CurrentWeek.Value;
     }
 
+    private CurrentRaceInfo GetWeekNumAndRaceInfo()
+    {
+        var raceTimeInfo = State.RaceTimeInfo.Value;
+        var currentWeekNum = State.CurrentWeek.Value;
+        while (Context.CurrentBlockTime.CompareTo(raceTimeInfo.EndTime) > 0)
+        {
+            raceTimeInfo.BeginTime = raceTimeInfo.EndTime;
+            raceTimeInfo.EndTime = raceTimeInfo.EndTime.AddHours(State.RaceConfig.Value.GameHours);
+            raceTimeInfo.SettleBeginTime = raceTimeInfo.EndTime;
+            raceTimeInfo.SettleEndTime = raceTimeInfo.EndTime.AddDays(1);
+
+            currentWeekNum += 1;
+        }
+
+        if (currentWeekNum == 0)
+        {
+            currentWeekNum = HamsterWoodsContractConstants.StartWeekNum;
+        }
+
+        return new CurrentRaceInfo
+        {
+            RaceTimeInfo = raceTimeInfo,
+            WeekNum = currentWeekNum
+        };
+    }
+
     // need call GetWeekNum() when use this method
     private long GetLockedAcorns(PlayerInformation playerInformation)
     {
@@ -269,5 +295,44 @@ public partial class HamsterWoodsContract
     {
         var beginTime = State.RaceConfig.Value.BeginTime;
         return Context.CurrentBlockTime.CompareTo(beginTime) >= 0;
+    }
+
+    private LockedAcornsInfo CreateLockedAcornsInfo(long score)
+    {
+        return new LockedAcornsInfo
+        {
+            Acorns = score,
+            Week = State.CurrentWeek.Value,
+            SettleTime = State.RaceTimeInfo.Value.SettleBeginTime,
+            IsAddLockedAcorns = false,
+            IsUnlocked = false
+        };
+    }
+
+    private void SetLockedAcornsInfo(Address address, long score)
+    {
+        var lockedAcornsInfoList = State.LockedAcornsInfoList[address];
+        if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null || lockedAcornsInfoList.Value.Count == 0)
+        {
+            State.LockedAcornsInfoList[address] = new LockedAcornsInfoList
+            {
+                Value =
+                {
+                    CreateLockedAcornsInfo(score)
+                }
+            };
+
+            return;
+        }
+
+        var lockedInfo = lockedAcornsInfoList.Value.FirstOrDefault(t => t.Week == State.CurrentWeek.Value);
+        if (lockedInfo == null)
+        {
+            lockedAcornsInfoList.Value.Add(CreateLockedAcornsInfo(score));
+        }
+        else
+        {
+            lockedInfo.Acorns += score;
+        }
     }
 }

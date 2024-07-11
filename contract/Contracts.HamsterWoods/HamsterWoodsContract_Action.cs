@@ -103,45 +103,6 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         return new Empty();
     }
 
-    private void SetLockedAcornsInfo(Address address, long score)
-    {
-        var lockedAcornsInfoList = State.LockedAcornsInfoList[address];
-        if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null || lockedAcornsInfoList.Value.Count == 0)
-        {
-            State.LockedAcornsInfoList[address] = new LockedAcornsInfoList
-            {
-                Value =
-                {
-                    CreateLockedAcornsInfo(score)
-                }
-            };
-
-            return;
-        }
-
-        var lockedInfo = lockedAcornsInfoList.Value.FirstOrDefault(t => t.Week == State.CurrentWeek.Value);
-        if (lockedInfo == null)
-        {
-            lockedAcornsInfoList.Value.Add(CreateLockedAcornsInfo(score));
-        }
-        else
-        {
-            lockedInfo.Acorns += score;
-        }
-    }
-
-    private LockedAcornsInfo CreateLockedAcornsInfo(long score)
-    {
-        return new LockedAcornsInfo
-        {
-            Acorns = score,
-            Week = State.CurrentWeek.Value,
-            SettleTime = State.RaceTimeInfo.Value.SettleBeginTime,
-            IsAddLockedAcorns = false,
-            IsUnlocked = false
-        };
-    }
-
     public override Empty PurchaseChance(Int32Value input)
     {
         Assert(State.RaceConfig.Value != null, "Invalid raceConfig");
