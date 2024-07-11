@@ -238,7 +238,7 @@ public partial class HamsterWoodsContract
         return State.CurrentWeek.Value;
     }
 
-    private CurrentRaceInfo GetWeekNumAndRaceInfo()
+    private CurrentRaceInfo GetCurrentRaceInfo()
     {
         var raceTimeInfo = State.RaceTimeInfo.Value;
         var currentWeekNum = State.CurrentWeek.Value;
@@ -260,7 +260,8 @@ public partial class HamsterWoodsContract
         return new CurrentRaceInfo
         {
             RaceTimeInfo = raceTimeInfo,
-            WeekNum = currentWeekNum
+            WeekNum = currentWeekNum,
+            AcornsLockedDays = State.RaceConfig.Value.AcornsLockedDays
         };
     }
 

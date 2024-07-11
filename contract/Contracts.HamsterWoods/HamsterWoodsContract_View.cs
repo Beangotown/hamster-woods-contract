@@ -72,6 +72,6 @@ public partial class HamsterWoodsContract
 
     public override CurrentRaceInfo GetCurrentRaceInfo(Empty input)
     {
-        return GetWeekNumAndRaceInfo();
+        return GetCurrentRaceInfo();
     }
 }

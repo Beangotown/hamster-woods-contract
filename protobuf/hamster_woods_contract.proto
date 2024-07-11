@@ -273,6 +273,7 @@ message RaceConfig {
   int32 game_hours = 2;
   bool is_race = 3;
   google.protobuf.Timestamp calibration_time = 4;
+  int32 acorns_locked_days = 5;
 }
 
 message RaceTimeInfo{
@@ -285,4 +286,5 @@ message RaceTimeInfo{
 message CurrentRaceInfo{
   RaceTimeInfo race_time_info = 1;
   int32 week_num = 2;
+  int32 acorns_locked_days = 3;
 }
