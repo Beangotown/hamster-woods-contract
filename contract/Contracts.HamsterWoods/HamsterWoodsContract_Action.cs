@@ -175,12 +175,6 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
 
         needUnlockInfo.IsUnlocked = true;
         var amount = needUnlockInfo.Acorns;
-        var playerInformation = State.PlayerInformation[input];
-        if (playerInformation != null)
-        {
-            playerInformation.LockedAcorns -= amount;
-            State.PlayerInformation[input] = playerInformation;
-        }
 
         State.TokenContract.Transfer.Send(new TransferInput
         {

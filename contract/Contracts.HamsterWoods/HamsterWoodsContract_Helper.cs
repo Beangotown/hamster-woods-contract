@@ -268,7 +268,7 @@ public partial class HamsterWoodsContract
     // need call GetWeekNum() when use this method
     private long GetLockedAcorns(PlayerInformation playerInformation)
     {
-        var lockedAcorns = playerInformation.LockedAcorns;
+        var lockedAcorns = 0;
         var lockedAcornsInfoList = State.LockedAcornsInfoList[playerInformation.PlayerAddress];
         if (lockedAcornsInfoList == null || lockedAcornsInfoList.Value == null || lockedAcornsInfoList.Value.Count == 0)
         {
@@ -276,20 +276,9 @@ public partial class HamsterWoodsContract
         }
 
         var needAddList = lockedAcornsInfoList.Value.Where(t =>
-            !t.IsAddLockedAcorns && !t.IsUnlocked && (Context.CurrentBlockTime.CompareTo(t.SettleTime) > 0)).ToList();
+            !t.IsUnlocked && (Context.CurrentBlockTime.CompareTo(t.SettleTime) > 0)).ToList();
 
-        if (needAddList.Count == 0)
-        {
-            return lockedAcorns;
-        }
-
-        var needAddAmount = needAddList.Sum(f => f.Acorns);
-        foreach (var item in needAddList)
-        {
-            item.IsAddLockedAcorns = true;
-        }
-
-        return lockedAcorns + needAddAmount;
+        return needAddList.Count == 0 ? lockedAcorns : needAddList.Sum(f => f.Acorns);
     }
 
     private bool IsBegin()
