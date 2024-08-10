@@ -325,4 +325,14 @@ public partial class HamsterWoodsContract
             lockedInfo.Acorns += score;
         }
     }
+    
+    private bool IsHashValid(Hash input)
+    {
+        return input != null && !input.Value.IsNullOrEmpty();
+    }
+    
+    private bool IsAddressValid(Address input)
+    {
+        return input != null && !input.Value.IsNullOrEmpty();
+    }
 }

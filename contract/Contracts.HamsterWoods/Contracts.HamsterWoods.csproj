@@ -28,5 +28,9 @@
         <ContractBase Include="..\..\protobuf\acs12.proto">
             <Link>Protobuf/Proto/acs12.proto</Link>
         </ContractBase>
+        
+        <ContractReference Include="..\..\protobuf\points_contract.proto">
+            <Link>Protobuf\Proto\points_contract.proto</Link>
+        </ContractReference>
     </ItemGroup>
 </Project>
