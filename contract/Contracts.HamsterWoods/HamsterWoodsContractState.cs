@@ -28,5 +28,10 @@ public partial class HamsterWoodsContractState : ContractState
     public SingletonState<ManagerList> ManagerList { get; set; } 
     public SingletonState<RaceConfig> RaceConfig { get; set; } 
     public SingletonState<RaceTimeInfo> RaceTimeInfo { get; set; } 
+    
+    // point
+    public MappedState<Address, bool> JoinRecord { get; set; }
+    public SingletonState<Hash> PointsContractDAppId { get; set; }
+    public SingletonState<string> OfficialDomain { get; set; }
 
 }

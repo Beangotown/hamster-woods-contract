@@ -1,5 +1,6 @@
 using AElf.Contracts.Consensus.AEDPoS;
 using AElf.Contracts.MultiToken;
+using Points.Contracts.Point;
 
 namespace Contracts.HamsterWoods
 {
@@ -7,5 +8,6 @@ namespace Contracts.HamsterWoods
     {
         internal TokenContractContainer.TokenContractReferenceState TokenContract { get; set; }
         internal AEDPoSContractContainer.AEDPoSContractReferenceState ConsensusContract { get; set; }
+        internal PointsContractContainer.PointsContractReferenceState PointsContract { get; set; }
     }
 }

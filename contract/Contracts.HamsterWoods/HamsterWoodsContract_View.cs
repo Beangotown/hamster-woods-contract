@@ -74,4 +74,9 @@ public partial class HamsterWoodsContract
     {
         return GetCurrentRaceInfo();
     }
+    
+    public override ManagerList GetManagers(Empty input)
+    {
+        return State.ManagerList.Value;
+    }
 }
