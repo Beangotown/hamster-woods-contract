@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\contract\Contracts.HamsterWoodsContract\Contracts.HamsterWoodsContract.csproj">
+        <ProjectReference Include="..\..\contract\Contracts.HamsterWoods\Contracts.HamsterWoods.csproj">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
             <OutputItemType>Contract</OutputItemType>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
