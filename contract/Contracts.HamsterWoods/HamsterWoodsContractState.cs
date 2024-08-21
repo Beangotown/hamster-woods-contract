@@ -32,5 +32,6 @@ public partial class HamsterWoodsContractState : ContractState
     // point
     public MappedState<Address, bool> JoinRecord { get; set; }
     public SingletonState<Hash> PointsContractDAppId { get; set; }
+    public SingletonState<string> OfficialDomain { get; set; }
 
 }

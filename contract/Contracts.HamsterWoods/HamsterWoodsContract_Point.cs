@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using AElf.Sdk.CSharp;
 using AElf.Types;
 using Google.Protobuf.WellKnownTypes;
-using Points.Contracts.Point;
 
 namespace Contracts.HamsterWoods;
 
@@ -12,8 +11,9 @@ public partial class HamsterWoodsContract
     {
         Assert(input != null && !string.IsNullOrWhiteSpace(input.Domain), "Invalid input.");
         Assert(!State.JoinRecord[input.Address], "Already joined.");
-
-        JoinPointsContract(input);
+        Assert(State.ManagerList.Value.Value.Contains(Context.Sender), "No permission.");
+        
+        JoinPointsContract(input.Domain, input.Address);
 
         return new Empty();
     }
@@ -23,9 +23,8 @@ public partial class HamsterWoodsContract
         return new BoolValue { Value = State.JoinRecord[address] };
     }
 
-    private void JoinPointsContract(JoinInput input)
+    private void JoinPointsContract(string domain, Address registrant)
     {
-        var registrant = input.Address;
         if (!IsHashValid(State.PointsContractDAppId.Value) || State.PointsContract.Value == null)
         {
             return;
@@ -33,11 +32,10 @@ public partial class HamsterWoodsContract
 
         if (State.JoinRecord[registrant]) return;
 
-        var domain = input.Domain;
-        domain ??= State.PointsContract.GetDappInformation.Call(new GetDappInformationInput
+        if (string.IsNullOrWhiteSpace(domain))
         {
-            DappId = State.PointsContractDAppId.Value
-        })?.DappInfo?.OfficialDomain;
+            domain = State.OfficialDomain.Value;
+        }
 
         State.JoinRecord[registrant] = true;
 
@@ -57,6 +55,7 @@ public partial class HamsterWoodsContract
 
     public override Empty AcceptReferral(AcceptReferralInput input)
     {
+        Assert(State.ManagerList.Value.Value.Contains(Context.Sender), "No permission.");
         Assert(input != null, "Invalid input.");
         Assert(IsAddressValid(input.Referrer) && State.JoinRecord[input.Referrer], "Invalid referrer.");
         Assert(!State.JoinRecord[input.Invitee], "Already joined.");
@@ -82,11 +81,14 @@ public partial class HamsterWoodsContract
 
     public override Empty SetPointConfig(PonitConfigInput input)
     {
-        Assert(IsAddressValid(input.PointContractAddress), "Invalid point contract.");
-        Assert(IsHashValid(input.DappId), "Invalid dapp id");
+        Assert(State.ManagerList.Value.Value.Contains(Context.Sender), "No permission.");
+        Assert(IsAddressValid(input.PointContractAddress), "Invalid PointContractAddress.");
+        Assert(IsHashValid(input.DappId), "Invalid DappId.");
+        Assert(!string.IsNullOrWhiteSpace(input.OfficialDomain), "Invalid OfficialDomain.");
 
         State.PointsContract.Value = input.PointContractAddress;
         State.PointsContractDAppId.Value = input.DappId;
+        State.OfficialDomain.Value = input.OfficialDomain;
         return new Empty();
     }
 
@@ -95,19 +97,17 @@ public partial class HamsterWoodsContract
         return new PointConfig
         {
             DappId = State.PointsContractDAppId.Value,
-            PointContractAddress = State.PointsContract.Value
+            PointContractAddress = State.PointsContract.Value,
+            OfficialDomain = State.OfficialDomain.Value
         };
     }
 
     public override Empty Settle(SettleInput input)
     {
+        Assert(State.ManagerList.Value.Value.Contains(Context.Sender), "No permission.");
         Assert(!string.IsNullOrWhiteSpace(input.ActionName) && IsAddressValid(input.UserAddress), "Invalid input.");
-        // JoinPointsContract(new JoinInput
-        // {
-        //     Domain = null,
-        //     Address = input.UserAddress
-        // });
 
+        JoinPointsContract(null, input.UserAddress);
         State.PointsContract.Settle.Send(new Points.Contracts.Point.SettleInput
         {
             DappId = State.PointsContractDAppId.Value,
@@ -121,15 +121,12 @@ public partial class HamsterWoodsContract
 
     public override Empty BatchSettle(BatchSettleInput input)
     {
+        Assert(State.ManagerList.Value.Value.Contains(Context.Sender), "No permission.");
         Assert(input.UserPointsList != null && input.UserPointsList.Count > 0, "Invalid input.");
         var userPointsList = new List<Points.Contracts.Point.UserPoints>();
         foreach (var userPoints in input.UserPointsList)
         {
-            // JoinPointsContract(new JoinInput
-            // {
-            //     Domain = null,
-            //     Address = userPoints.UserAddress
-            // });
+            JoinPointsContract(null, userPoints.UserAddress);
             userPointsList.Add(new Points.Contracts.Point.UserPoints
             {
                 UserAddress = userPoints.UserAddress,

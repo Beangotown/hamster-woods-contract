@@ -97,6 +97,9 @@ service HamsterWoodsContract {
   rpc GetCurrentRaceInfo (google.protobuf.Empty) returns (CurrentRaceInfo) {
     option (aelf.is_view) = true;
   }
+  rpc GetManagers (google.protobuf.Empty) returns (ManagerList) {
+    option (aelf.is_view) = true;
+  }
 
   // point
   rpc Join(JoinInput) returns (google.protobuf.Empty) {}
@@ -328,11 +331,13 @@ message ReferralAccepted {
 message PonitConfigInput {
   aelf.Hash dapp_id = 1;
   aelf.Address point_contract_address = 2;
+  string official_domain = 3;
 }
 
 message PointConfig {
   aelf.Hash dapp_id = 1;
   aelf.Address point_contract_address = 2;
+  string official_domain = 3;
 }
 
 message SettleInput {
