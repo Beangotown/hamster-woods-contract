@@ -148,7 +148,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
     public override Empty BatchUnlockAcorns(UnlockAcornsInput input)
     {
         Assert(State.ManagerList.Value.Value.Contains(Context.Sender), "No permission.");
-        Assert(input.Addresses.Count > 0 && input.Addresses.Count < 20, "Invalid addresses.");
+        Assert(input.Addresses.Count > 0 && input.Addresses.Count <= 20, "Invalid addresses.");
         Assert(input.WeekNum > 0 && input.WeekNum < State.CurrentWeek.Value, "Invalid weekNum.");
 
         foreach (var address in input.Addresses)
