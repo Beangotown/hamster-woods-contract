@@ -53,6 +53,9 @@ service HamsterWoodsContract {
   rpc SetRaceConfig (RaceConfig) returns (google.protobuf.Empty) {
   }
 
+  rpc SetRewardConfig (RewardConfig) returns (google.protobuf.Empty) {
+  }
+
   // Views
   rpc CheckHamsterPass (aelf.Address) returns (google.protobuf.BoolValue) {
     option (aelf.is_view) = true;
@@ -97,7 +100,16 @@ service HamsterWoodsContract {
   rpc GetCurrentRaceInfo (google.protobuf.Empty) returns (CurrentRaceInfo) {
     option (aelf.is_view) = true;
   }
+  
   rpc GetManagers (google.protobuf.Empty) returns (ManagerList) {
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetRewardConfig (google.protobuf.Empty) returns (RewardConfig) {
+    option (aelf.is_view) = true;
+  }
+
+  rpc GetTotalReward (google.protobuf.Empty) returns (google.protobuf.Int64Value) {
     option (aelf.is_view) = true;
   }
 
@@ -221,6 +233,11 @@ message PurchaseChanceConfig {
   int32 weekly_purchase_count_reset_hour = 3;
 }
 
+message RewardConfig{
+  bool is_open = 1;
+  int32 cardinal_number = 2;
+  int32 rate = 3;
+}
 // LogEvent
 message Picked {
   option (aelf.is_event) = true;
@@ -239,6 +256,7 @@ message Picked {
   bool is_race = 13;
   int32 week_num = 14;
   int32 acorns_decimals = 15;
+  int64 reward_amount = 16;
 }
 
 message AcornsUnlocked {

@@ -335,4 +335,56 @@ public partial class HamsterWoodsContract
     {
         return input != null && !input.Value.IsNullOrEmpty();
     }
+    
+    private int GetRewardCount(Hash usefulHash)
+    {
+        var minScore = 1;
+        var maxScore = 1;
+        var randomNum = Convert.ToInt32(Math.Abs(usefulHash.ToInt64() % 101));
+
+        var rewardConfig = State.RewardConfig.Value;
+        var cardinalNumber = rewardConfig.CardinalNumber;
+        var rate = rewardConfig.Rate;
+        var offset = cardinalNumber * rate / 100;
+        if (randomNum is >= 0 and <= 68)
+        {
+            minScore = Convert.ToInt32(cardinalNumber - offset);
+            maxScore = Convert.ToInt32(cardinalNumber + offset);
+        }
+        else if (randomNum is > 68 and <= 95)
+        {
+            minScore = Convert.ToInt32(cardinalNumber - offset * 2);
+            maxScore = Convert.ToInt32(cardinalNumber + offset * 2);
+        }
+        else
+        {
+            if (randomNum % 2 == 0)
+            {
+                maxScore = Convert.ToInt32(cardinalNumber - offset * 2) - 1;
+            }
+            else
+            {
+                minScore = Convert.ToInt32(cardinalNumber + offset * 2);
+                maxScore = Convert.ToInt32(cardinalNumber + offset * 3) - 1;
+            }
+        }
+
+        return Convert.ToInt32(Math.Abs(usefulHash.ToInt64() % (maxScore - minScore + 1)) + minScore);
+    }
+
+    private bool NeedReward(int playableCount)
+    {
+        if (playableCount > 0)
+        {
+            return false;
+        }
+        
+        var rewardConfig = State.RewardConfig.Value;
+        if (rewardConfig == null || !rewardConfig.IsOpen)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

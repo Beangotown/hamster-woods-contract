@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using AElf;
 using AElf.Contracts.MultiToken;
@@ -58,6 +59,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
         Assert(playerInformation.PlayableCount > 0 || playerInformation.PurchasedChancesCount > 0,
             "PlayableCount is not enough");
 
+        var needReward = NeedReward(playerInformation.PlayableCount);
         var boutInformation = new BoutInformation
         {
             PlayId = Context.OriginTransactionId,
@@ -76,6 +78,7 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
 
         var score = boutInformation.Score * HamsterWoodsContractConstants.AcornsDecimalsValue;
         SetLockedAcornsInfo(Context.Sender, score);
+        var rewardAmount = Reward(Context.Sender, needReward, boutInformation.PlayId, randomHash);
         Context.Fire(new Picked
         {
             GridType = boutInformation.GridType,
@@ -98,7 +101,8 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             TotalChance = playerInformation.PurchasedChancesCount,
             WeekNum = State.CurrentWeek.Value,
             IsRace = State.RaceConfig.Value.IsRace,
-            AcornsDecimals = HamsterWoodsContractConstants.AcornsDecimals
+            AcornsDecimals = HamsterWoodsContractConstants.AcornsDecimals,
+            RewardAmount = rewardAmount
         });
         return new Empty();
     }
@@ -112,7 +116,6 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
 
         var playerInformation = SetPlayerInfo(false);
         var costAmount = input.Value * acornsAmount;
-        ;
         Assert(playerInformation.TotalAcorns >= costAmount, "Acorns is not enough");
         Assert(
             GeWeeklyPurchasedChanceCount(State.PurchaseChanceConfig.Value, playerInformation) >=
@@ -191,5 +194,37 @@ public partial class HamsterWoodsContract : HamsterWoodsContractContainer.Hamste
             Amount = amount,
             WeekNum = needUnlockInfo.Week
         });
+    }
+
+    private long Reward(Address address, bool needReward, Hash playId, Hash randomHash)
+    {
+        if (!needReward)
+        {
+            return 0L;
+        }
+
+        var rewardAmount = Reward(address, playId, randomHash);
+        State.TotalRewardAcorns.Value += rewardAmount;
+        return rewardAmount;
+    }
+
+    private long Reward(Address address, Hash playId, Hash randomHash)
+    {
+        var usefulHash = HashHelper.XorAndCompute(randomHash, playId);
+        var rewardCount = GetRewardCount(usefulHash);
+        if (rewardCount == 0)
+        {
+            return 0L;
+        }
+
+        var amount = rewardCount * HamsterWoodsContractConstants.AcornsDecimalsValue;
+        State.TokenContract.Transfer.Send(new TransferInput
+        {
+            To = address,
+            Symbol = HamsterWoodsContractConstants.AcornsSymbol,
+            Amount = amount
+        });
+
+        return amount;
     }
 }

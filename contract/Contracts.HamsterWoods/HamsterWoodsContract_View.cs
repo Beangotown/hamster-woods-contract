@@ -79,4 +79,14 @@ public partial class HamsterWoodsContract
     {
         return State.ManagerList.Value;
     }
+    
+    public override RewardConfig GetRewardConfig(Empty input)
+    {
+        return State.RewardConfig.Value;
+    }
+    
+    public override Int64Value GetTotalReward(Empty input)
+    {
+        return new Int64Value { Value = State.TotalRewardAcorns.Value };
+    }
 }

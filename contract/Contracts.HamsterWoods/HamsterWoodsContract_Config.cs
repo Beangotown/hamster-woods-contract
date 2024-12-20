@@ -102,4 +102,13 @@ public partial class HamsterWoodsContract
         SetWeekNum(input.BeginTime, input.CalibrationTime, input.GameHours);
         return new Empty();
     }
+    
+    public override Empty SetRewardConfig(RewardConfig input)
+    {
+        Assert(State.Initialized.Value, "Not initialized.");
+        Assert(State.Admin.Value == Context.Sender, "No permission.");
+
+        State.RewardConfig.Value = input;
+        return new Empty();
+    }
 }
