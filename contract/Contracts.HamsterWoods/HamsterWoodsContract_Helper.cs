@@ -90,8 +90,8 @@ public partial class HamsterWoodsContract
         else
         {
             var gameRules = State.GameRules.Value;
-            var minScore = 30;
-            var maxScore = 50;
+            var minScore = 20;
+            var maxScore = 40;
             if (gameRules != null)
             {
                 if (Context.CurrentBlockTime.CompareTo(gameRules.BeginTime) >= 0 &&
